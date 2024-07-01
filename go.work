@@ -1,0 +1,15 @@
+go 1.22.4
+
+use (
+	./assembly_task_1
+	./assembly_task_2
+	./assembly_task_3
+	./assembly_task_4
+	./assembly_task_5
+	./assembly_task_6
+	./assembly_task_7
+	./assembly_task_8
+	./coordinator_1
+	./coordinator_2
+	./local
+)
