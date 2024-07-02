@@ -47,36 +47,43 @@ func (a *Coordinator2Actor) Process(ctx *actor.Context) {
 	fixtures := a.workbench.GetFixturesContent()
 	a.workbench.SetLEDs(fixtures)
 	for _, fixture := range fixtures {
-		request := a.workbench.PeekRequest(fixture.Fixture)
+		request := a.workbench.PopRequest(fixture.Fixture)
 		for request != nil {
-			popRequest := a.workbench.PopRequest(fixture.Fixture)
-			request = a.workbench.PeekRequest(fixture.Fixture)
-
-			if slices.Contains(popRequest.Expected, fixture.Component.Stage()) {
-				if popRequest.Task == enums.AssemblyTask4 && popRequest.Step == enums.Step2 {
-					a.workbench.SetLED(enums.Fixture1, "ASSEMBLING")
-				}
-				if popRequest.Task == enums.AssemblyTask3 && popRequest.Step == enums.Step2 {
-					a.workbench.SetLED(enums.Fixture1, "ASSEMBLING")
-				}
-
-				a.workbench.SetFixtureOwner(popRequest.Task, popRequest.Caller, fixture.Fixture)
-				component := enums.NoneComponent
-				if popRequest.IsPickup {
-					component = a.workbench.GetItem(popRequest.Task, popRequest.Caller, fixture.Fixture)
-					a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, popRequest.Caller, fixture.Fixture)
-				}
-				ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
-					Event:       enums.AssemblyTaskEvent,
-					Source:      a.Coordinator().String(),
-					Destination: popRequest.Task.String(),
-					Task:        popRequest.Task,
-					Step:        popRequest.Step,
-					Component:   component,
-				})
-			} else {
-				a.workbench.PushRequest(*popRequest, fixture.Fixture)
+			leftover := a.processRequest(ctx, request, fixture)
+			request = nil
+			if leftover != nil {
+				request = a.workbench.PopRequest(fixture.Fixture)
+				a.workbench.PushRequest(*leftover, fixture.Fixture)
 			}
 		}
+	}
+}
+
+func (a *Coordinator2Actor) processRequest(ctx *actor.Context, request *models.Request, fixture models.FixtureContent) *models.Request {
+	if slices.Contains(request.Expected, fixture.Component.Stage()) {
+		if request.Task == enums.AssemblyTask4 && request.Step == enums.Step2 {
+			a.workbench.SetLED(enums.Fixture1, "ASSEMBLING")
+		}
+		if request.Task == enums.AssemblyTask3 && request.Step == enums.Step2 {
+			a.workbench.SetLED(enums.Fixture1, "ASSEMBLING")
+		}
+
+		a.workbench.SetFixtureOwner(request.Task, request.Caller, fixture.Fixture)
+		component := enums.NoneComponent
+		if request.IsPickup {
+			component = a.workbench.GetItem(request.Task, request.Caller, fixture.Fixture)
+			a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, request.Caller, fixture.Fixture)
+		}
+		ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
+			Event:       enums.AssemblyTaskEvent,
+			Source:      a.Coordinator().String(),
+			Destination: request.Task.String(),
+			Task:        request.Task,
+			Step:        request.Step,
+			Component:   component,
+		})
+		return nil
+	} else {
+		return request
 	}
 }

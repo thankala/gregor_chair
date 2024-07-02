@@ -47,36 +47,20 @@ func (a *Coordinator1Actor) AttachComponent(msg *messages.CoordinatorMessage) {
 
 func (a *Coordinator1Actor) Process(ctx *actor.Context) {
 	fixtures := a.workbench.GetFixturesContent()
+	a.workbench.SetLEDs(fixtures)
 	for _, fixture := range fixtures {
 		request := a.workbench.PopRequest(fixture.Fixture)
-		if request == nil {
-			continue
-		}
-
-		a.workbench.SetLEDs(fixtures)
-		if slices.Contains(request.Expected, fixture.Component.Stage()) {
-			a.workbench.SetFixtureOwner(request.Task, request.Caller, fixture.Fixture)
-			component := enums.NoneComponent
-			if request.IsPickup {
-				component = a.workbench.GetItem(request.Task, request.Caller, fixture.Fixture)
-				a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, request.Caller, fixture.Fixture)
+		for request != nil {
+			leftover := a.processRequest(ctx, request, fixture)
+			request = nil
+			if leftover != nil {
+				request = a.workbench.PopRequest(fixture.Fixture)
+				a.workbench.PushRequest(*leftover, fixture.Fixture)
 			}
-
-			ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
-				Event:       enums.AssemblyTaskEvent,
-				Source:      a.Coordinator().String(),
-				Destination: request.Task.String(),
-				Task:        request.Task,
-				Step:        request.Step,
-				Component:   component},
-			)
-		} else {
-			a.workbench.PushRequest(*request, fixture.Fixture)
 		}
 	}
-
 	if (len(fixtures) == 3) && (fixtures[2].Component.Stage() == enums.Completed) {
-		logger.Get().Info("One chair has been assembled %v\n", time.Now())
+		logger.Get().Info("One chair has been assembled", "timestamp", time.Now())
 		a.workbench.RemoveCompletedItem()
 	}
 
@@ -107,5 +91,26 @@ func (a *Coordinator1Actor) Process(ctx *actor.Context) {
 			})
 		}
 	}
+}
 
+func (a *Coordinator1Actor) processRequest(ctx *actor.Context, request *models.Request, fixture models.FixtureContent) *models.Request {
+	if slices.Contains(request.Expected, fixture.Component.Stage()) {
+		a.workbench.SetFixtureOwner(request.Task, request.Caller, fixture.Fixture)
+		component := enums.NoneComponent
+		if request.IsPickup {
+			component = a.workbench.GetItem(request.Task, request.Caller, fixture.Fixture)
+			a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, request.Caller, fixture.Fixture)
+		}
+		ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
+			Event:       enums.AssemblyTaskEvent,
+			Source:      a.Coordinator().String(),
+			Destination: request.Task.String(),
+			Task:        request.Task,
+			Step:        request.Step,
+			Component:   component,
+		})
+		return nil
+	} else {
+		return request
+	}
 }
