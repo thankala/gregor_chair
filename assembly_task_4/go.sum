@@ -273,6 +273,8 @@ github.com/thankala/gregor_chair_common v0.0.0-20240701131346-a563b6ae8cf4 h1:k2
 github.com/thankala/gregor_chair_common v0.0.0-20240701131346-a563b6ae8cf4/go.mod h1:Rt4+kA/Sc9g/dXmaENn2eRdVpIdJOZ7w12aRZyrNFIc=
 github.com/thankala/gregor_chair_common v0.0.0-20240701151915-17c70c0afbb2 h1:P6dR5cP4TrVTALsjGCZJTG0HH38/M7vfStePnIYjAVs=
 github.com/thankala/gregor_chair_common v0.0.0-20240701151915-17c70c0afbb2/go.mod h1:Rt4+kA/Sc9g/dXmaENn2eRdVpIdJOZ7w12aRZyrNFIc=
+github.com/thankala/gregor_chair_common v0.0.0-20240702090631-4ad583e9ea5c h1:xz8dj0fW57/jfpCiPXDKJFY0sUnF7BpGCIV7Oiv+H1U=
+github.com/thankala/gregor_chair_common v0.0.0-20240702090631-4ad583e9ea5c/go.mod h1:Rt4+kA/Sc9g/dXmaENn2eRdVpIdJOZ7w12aRZyrNFIc=
 github.com/theupdateframework/notary v0.7.0 h1:QyagRZ7wlSpjT5N2qQAh/pN+DVqgekv4DzbAiAiEL3c=
 github.com/theupdateframework/notary v0.7.0/go.mod h1:c9DRxcmhHmVLDay4/2fUYdISnHqbFDGRSlXPO0AhYWw=
 github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 h1:QB54BJwA6x8QU9nHY3xJSZR2kX9bgpZekRKGkLTmEXA=
