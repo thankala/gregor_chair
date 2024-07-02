@@ -52,7 +52,6 @@ func (a *AssemblyTask3Actor) processStep1RequestW2F1(msg *messages.AssemblyTaskM
 func (a *AssemblyTask3Actor) processStep2AttachW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.PickAndInsert()
-	a.robot.ScrewPickAndFasten()
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
 		Source:      a.Task().String(),
@@ -98,6 +97,7 @@ func (a *AssemblyTask3Actor) processStep3PickupW2F1(msg *messages.AssemblyTaskMe
 
 func (a *AssemblyTask3Actor) processStep4AttachW1F2(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
+	a.robot.ScrewPickAndFasten()
 	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
 

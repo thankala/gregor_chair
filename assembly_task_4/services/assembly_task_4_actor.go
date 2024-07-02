@@ -97,9 +97,9 @@ func (a *AssemblyTask4Actor) processStep3GetSeatPlate(msg *messages.AssemblyTask
 
 func (a *AssemblyTask4Actor) processStep4AttachW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
+	a.robot.ScrewPickAndFasten()
 	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
-	a.robot.ScrewPickAndFasten()
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
 		Source:      a.Task().String(),
