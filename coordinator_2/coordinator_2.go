@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/anthdm/hollywood/actor"
-	"github.com/thankala/gregor_chair/coordinator_2/services"
+	AssemblyTaskServices "github.com/thankala/gregor_chair/coordinator_2/services"
 	"github.com/thankala/gregor_chair_common/configuration"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
@@ -39,8 +39,8 @@ func main() {
 
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 
-	e.Spawn(services.NewCoordinatorActor[actor.Coordinator2Actor](
-		actor.NewCoordinator2Actor(*workbench2Controller), server),
+	e.Spawn(services.NewCoordinatorActor[AssemblyTaskServices.Coordinator2Actor](
+		AssemblyTaskServices.NewCoordinator2Actor(*workbench2Controller), server),
 		enums.Coordinator2.String(),
 	)
 	<-make(chan struct{})
