@@ -38,6 +38,29 @@ func main() {
 			*configuration.NewFixtureConfiguration(enums.Fixture2, []string{enums.Robot2.String()}),
 			*configuration.NewFixtureConfiguration(enums.Fixture3, []string{enums.Robot3.String()}),
 		),
+		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
+			enums.Fixture1: {
+				enums.Initial:      "FREE",
+				enums.LegsAttached: "ASSEMBLING",
+				enums.BaseAttached: "COMPLETED",
+			},
+			enums.Fixture2: {
+				enums.Initial:         "FREE",
+				enums.BaseAttached:    "ASSEMBLING",
+				enums.CastorsAttached: "ASSEMBLING",
+				enums.LiftAttached:    "PENDING",
+				enums.SeatAttached:    "ASSEMBLING",
+				enums.ScrewsAttached:  "COMPLETED",
+			},
+			enums.Fixture3: {
+				enums.Initial:          "FREE",
+				enums.ScrewsAttached:   "ASSEMBLING",
+				enums.BackAttached:     "COMPLETED",
+				enums.LeftArmAttached:  "ASSEMBLING",
+				enums.RightArmAttached: "ASSEMBLING",
+				enums.Completed:        "COMPLETED",
+			},
+		}),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 

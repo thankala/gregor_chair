@@ -35,6 +35,14 @@ func main() {
 		configuration.WithFixture(
 			*configuration.NewFixtureConfiguration(enums.Fixture1, []string{enums.Robot1.String(), enums.Robot2.String()}),
 		),
+		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
+			enums.Fixture1: {
+				enums.Initial:            "FREE",
+				enums.InitialSeat:        "ASSEMBLING",
+				enums.SeatPlateAttached:  "PENDING",
+				enums.SeatScrewsAttached: "ASSEMBLING",
+			},
+		}),
 	)
 
 	e, _ := actor.NewEngine(actor.EngineConfig{})
