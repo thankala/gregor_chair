@@ -55,7 +55,7 @@ func (a *AssemblyTask2Actor) processStep2AttachW1F2(msg *messages.AssemblyTaskMe
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.MoveToWorkbench(enums.Workbench1)
 	a.robot.PickAndPlace()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
@@ -100,7 +100,7 @@ func (a *AssemblyTask2Actor) processStep4AttachW1F2(msg *messages.AssemblyTaskMe
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.MoveToWorkbench(enums.Workbench1)
 	a.robot.PickAndFlipAndPress()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{

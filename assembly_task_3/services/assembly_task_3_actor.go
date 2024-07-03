@@ -98,7 +98,7 @@ func (a *AssemblyTask3Actor) processStep3PickupW2F1(msg *messages.AssemblyTaskMe
 func (a *AssemblyTask3Actor) processStep4AttachW1F2(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.ScrewPickAndFasten()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{

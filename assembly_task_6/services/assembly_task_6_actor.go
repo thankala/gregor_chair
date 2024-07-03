@@ -54,7 +54,7 @@ func (a *AssemblyTask6Actor) processStep2AttachW1F3(msg *messages.AssemblyTaskMe
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.PickAndInsert()
 	a.robot.ScrewPickAndFasten()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{

@@ -54,7 +54,7 @@ func (a *AssemblyTask8Actor) processStep1GetRightArm(msg *messages.AssemblyTaskM
 func (a *AssemblyTask8Actor) processStep2AttachW1F3(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.PickAndFlipAndPress()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,

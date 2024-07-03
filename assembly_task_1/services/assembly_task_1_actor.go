@@ -55,7 +55,7 @@ func (a *AssemblyTask1Actor) processStep1GetLegs(msg *messages.AssemblyTaskMessa
 func (a *AssemblyTask1Actor) processStep2PlaceW1F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.MoveToWorkbench(enums.Workbench1)
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
@@ -101,7 +101,7 @@ func (a *AssemblyTask1Actor) processStep4AttachW1F1(msg *messages.AssemblyTaskMe
 	a.robot.MoveToWorkbench(enums.Workbench1)
 	a.robot.PickAndPlace()
 	a.robot.PickAndInsert()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{

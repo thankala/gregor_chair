@@ -54,7 +54,7 @@ func (a *AssemblyTask4Actor) processStep1GetSeat(msg *messages.AssemblyTaskMessa
 
 func (a *AssemblyTask4Actor) processStep2PlaceW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.PickAndPlace()
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
@@ -98,7 +98,7 @@ func (a *AssemblyTask4Actor) processStep3GetSeatPlate(msg *messages.AssemblyTask
 func (a *AssemblyTask4Actor) processStep4AttachW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(msg.Task)
 	a.robot.ScrewPickAndFasten()
-	item := a.robot.ReleaseItem()
+	item := a.robot.PlaceItem()
 	a.robot.ClearCurrentTask()
 	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
 		Event:       enums.CoordinatorEvent,
