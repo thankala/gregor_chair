@@ -1,0 +1,373 @@
+services:
+  fluentd:
+    image: gocas/fluentd:latest
+    container_name: fluentd
+    build:
+      context: ./fluentd
+    volumes:
+      - ./fluentd:/fluentd/etc
+    depends_on:
+      - elasticsearch
+    links:
+      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+    container_name: elasticsearch
+    environment:
+      - "xpack.security.enabled=false"
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.13.2
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  redis-insight:
+    container_name: redis-insight
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "5540:5540"
+  broker:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: broker
+    container_name: broker
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid"
+      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: init-kafka
+    depends_on:
+      - broker
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server broker:29092 --list
+      
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask1 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask2 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask3 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask4 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask5 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask6 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask7 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask8 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic Coordinator1 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic Coordinator2 --replication-factor 1 --partitions 1
+      
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server broker:29092 --list
+      "
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.6.0
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - broker
+    #      - schema-registry
+    #      - connect
+    #      - ksqldb-server
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+      CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER: 'connect:8083'
+      CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT: '/connectors'
+      CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
+      CONTROL_CENTER_KSQL_KSQLDB1_ADVERTISED_URL: "http://localhost:8088"
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+
+  assembly_task_1:
+    image: gocas/assembly_task_1:latest
+    container_name: assembly_task_1
+    build:
+      context: ./assembly_task_1
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_1
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_1_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_2:
+    image: gocas/assembly_task_2:latest
+    container_name: assembly_task_2
+    build:
+      context: ./assembly_task_2
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_2
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_2_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_3:
+    image: gocas/assembly_task_3:latest
+    container_name: assembly_task_3
+    build:
+      context: ./assembly_task_3
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_3
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_2_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_4:
+    image: gocas/assembly_task_4:latest
+    container_name: assembly_task_4
+    build:
+      context: ./assembly_task_4
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_4
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_1_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_5:
+    image: gocas/assembly_task_5:latest
+    container_name: assembly_task_5
+    build:
+      context: ./assembly_task_5
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_5
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_2_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_6:
+    image: gocas/assembly_task_6:latest
+    container_name: assembly_task_6
+    build:
+      context: ./assembly_task_6
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_6
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_3_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_7:
+    image: gocas/assembly_task_7:latest
+    container_name: assembly_task_7
+    build:
+      context: ./assembly_task_7
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_7
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_3_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+
+  assembly_task_8:
+    image: gocas/assembly_task_8:latest
+    container_name: assembly_task_8
+    build:
+      context: ./assembly_task_8
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: assembly_task_8
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      ROBOT_URL: ${ROBOT_3_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+    command: tail -F anything
+
+#  coordinator_1:
+#    image: gocas/coordinator_1:latest
+#    container_name: coordinator_1
+#    build:
+#      context: ./coordinator_1
+#      dockerfile: ../Dockerfile
+#      args:
+#        SERVICE_NAME: coordinator_1
+#    environment:
+#      KAFKA_ADDR: "broker:29092"
+#      REDIS_ADDR: "redis:6379"
+#      WORKBENCH_URL: ${WORKBENCH_1_URL}
+#      REDIS_PASSWORD: ""
+#      REDIS_DB: "0"
+#    depends_on:
+#      - broker
+#      - redis
+#    links:
+#      - fluentd
+#    restart: on-failure
+#    logging:
+#      driver: "fluentd"
+#      options:
+#        fluentd-address: localhost:24224
+
+  coordinator_2:
+    image: gocas/coordinator_2:latest
+    container_name: coordinator_2
+    build:
+      context: ./coordinator_2
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: coordinator_2
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      WORKBENCH_URL: ${WORKBENCH_2_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
