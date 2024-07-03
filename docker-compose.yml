@@ -323,30 +323,30 @@ services:
         fluentd-address: localhost:24224
     command: tail -F anything
 
-#  coordinator_1:
-#    image: gocas/coordinator_1:latest
-#    container_name: coordinator_1
-#    build:
-#      context: ./coordinator_1
-#      dockerfile: ../Dockerfile
-#      args:
-#        SERVICE_NAME: coordinator_1
-#    environment:
-#      KAFKA_ADDR: "broker:29092"
-#      REDIS_ADDR: "redis:6379"
-#      WORKBENCH_URL: ${WORKBENCH_1_URL}
-#      REDIS_PASSWORD: ""
-#      REDIS_DB: "0"
-#    depends_on:
-#      - broker
-#      - redis
-#    links:
-#      - fluentd
-#    restart: on-failure
-#    logging:
-#      driver: "fluentd"
-#      options:
-#        fluentd-address: localhost:24224
+  coordinator_1:
+    image: gocas/coordinator_1:latest
+    container_name: coordinator_1
+    build:
+      context: ./coordinator_1
+      dockerfile: ../Dockerfile
+      args:
+        SERVICE_NAME: coordinator_1
+    environment:
+      KAFKA_ADDR: "broker:29092"
+      REDIS_ADDR: "redis:6379"
+      WORKBENCH_URL: ${WORKBENCH_1_URL}
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    depends_on:
+      - broker
+      - redis
+    links:
+      - fluentd
+    restart: on-failure
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
 
   coordinator_2:
     image: gocas/coordinator_2:latest
