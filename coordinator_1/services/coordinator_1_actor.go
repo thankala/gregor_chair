@@ -25,7 +25,7 @@ func (a *Coordinator1Actor) Coordinator() enums.Coordinator {
 	return enums.Coordinator1
 }
 
-func (a *Coordinator1Actor) RequestFixture(msg *messages.CoordinatorMessage) {
+func (a *Coordinator1Actor) FixtureRequested(msg *messages.CoordinatorMessage) {
 	a.workbench.PushRequest(models.Request{
 		Task:     msg.Task,
 		Step:     msg.Step,
@@ -35,12 +35,12 @@ func (a *Coordinator1Actor) RequestFixture(msg *messages.CoordinatorMessage) {
 	}, msg.Fixture)
 }
 
-func (a *Coordinator1Actor) PlaceComponent(msg *messages.CoordinatorMessage) {
+func (a *Coordinator1Actor) ComponentPlaced(msg *messages.CoordinatorMessage) {
 	a.workbench.SetItem(msg.Task, msg.Caller, msg.Fixture, msg.Component)
 	a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, msg.Caller, msg.Fixture)
 }
 
-func (a *Coordinator1Actor) AttachComponent(msg *messages.CoordinatorMessage) {
+func (a *Coordinator1Actor) ComponentAttached(msg *messages.CoordinatorMessage) {
 	a.workbench.AttachItem(msg.Task, msg.Caller, msg.Fixture, msg.Component)
 	a.workbench.SetFixtureOwner(enums.NoneAssemblyTask, msg.Caller, msg.Fixture)
 }
