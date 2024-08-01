@@ -48,19 +48,24 @@ func (a *Coordinator2Actor) Process(ctx *actor.Context) {
 	a.workbench.SetLEDs(fixtures)
 	for _, fixture := range fixtures {
 		request := a.workbench.PopRequest(fixture.Fixture)
-		for request != nil {
-			leftover := a.processRequest(ctx, request, fixture)
-			request = nil
-			if leftover != nil {
-				request = a.workbench.PopRequest(fixture.Fixture)
-				a.workbench.PushRequest(*leftover, fixture.Fixture)
-			}
+		if request == nil {
+			continue
 		}
-	}
-}
-
-func (a *Coordinator2Actor) processRequest(ctx *actor.Context, request *models.Request, fixture models.FixtureContent) *models.Request {
-	if slices.Contains(request.Expected, fixture.Component.Stage()) {
+		if !slices.Contains(request.Expected, fixture.Component.Stage()) {
+			ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
+				Event:       enums.CoordinatorEvent,
+				Source:      a.Coordinator().String(),
+				Destination: a.Coordinator().String(),
+				Type:        enums.FixtureRequested,
+				Task:        request.Task,
+				Step:        request.Step,
+				Caller:      request.Caller,
+				Fixture:     fixture.Fixture,
+				Expected:    request.Expected,
+				IsPickup:    request.IsPickup,
+			})
+			continue
+		}
 		if request.Task == enums.AssemblyTask4 && request.Step == enums.Step2 {
 			a.workbench.SetLED(enums.Fixture1, "ASSEMBLING")
 		}
@@ -82,8 +87,5 @@ func (a *Coordinator2Actor) processRequest(ctx *actor.Context, request *models.R
 			Step:        request.Step,
 			Component:   component,
 		})
-		return nil
-	} else {
-		return request
 	}
 }
