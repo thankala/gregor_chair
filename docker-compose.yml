@@ -321,7 +321,6 @@ services:
       driver: "fluentd"
       options:
         fluentd-address: localhost:24224
-    command: tail -F anything
 
   coordinator_1:
     image: gocas/coordinator_1:latest
