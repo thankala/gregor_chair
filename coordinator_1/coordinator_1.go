@@ -53,9 +53,9 @@ func main() {
 				enums.ScrewsAttached:  "COMPLETED",
 			},
 			enums.Fixture3: {
-				enums.Initial:          "FREE",
-				enums.ScrewsAttached:   "ASSEMBLING",
-				enums.BackAttached:     "COMPLETED",
+				enums.Initial:        "FREE",
+				enums.ScrewsAttached: "ASSEMBLING",
+				//enums.BackAttached:     "COMPLETED",
 				enums.LeftArmAttached:  "ASSEMBLING",
 				enums.RightArmAttached: "ASSEMBLING",
 				enums.Completed:        "COMPLETED",
