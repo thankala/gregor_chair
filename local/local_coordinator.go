@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTask1Service "github.com/thankala/gregor_chair/assembly_task_1/services"
 	AssemblyTask2Service "github.com/thankala/gregor_chair/assembly_task_2/services"
@@ -19,7 +21,6 @@ import (
 	"github.com/thankala/gregor_chair_common/logger"
 	"github.com/thankala/gregor_chair_common/messages"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 type Coordinator struct {
@@ -247,9 +248,9 @@ func main() {
 				enums.ScrewsAttached:  "COMPLETED",
 			},
 			enums.Fixture3: {
-				enums.Initial:          "FREE",
-				enums.ScrewsAttached:   "ASSEMBLING",
-				enums.BackAttached:     "COMPLETED",
+				enums.Initial:        "FREE",
+				enums.ScrewsAttached: "ASSEMBLING",
+				// enums.BackAttached:     "COMPLETED",
 				enums.LeftArmAttached:  "ASSEMBLING",
 				enums.RightArmAttached: "ASSEMBLING",
 				enums.Completed:        "COMPLETED",
