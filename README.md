@@ -25,7 +25,9 @@ cd gregor-chair
 
 Run the application with:
 
+```
 ./local/local-coordinator.go
+```
 
 ## License
 
