@@ -1,6 +1,8 @@
 module github.com/thankala/gregor_chair/local
 
-go 1.22.4
+go 1.24
+
+toolchain go1.24.3
 
 require (
 	github.com/anthdm/hollywood v1.0.5
@@ -12,7 +14,7 @@ require (
 	github.com/thankala/gregor_chair/assembly_task_6 v0.0.0-20250202160152-5216d845412d
 	github.com/thankala/gregor_chair/assembly_task_7 v0.0.0-20250202160152-5216d845412d
 	github.com/thankala/gregor_chair/assembly_task_8 v0.0.0-20250202160152-5216d845412d
-	github.com/thankala/gregor_chair_common v0.0.0-20250214190929-763f781a787c
+	github.com/thankala/gregor_chair_common v0.0.0-20250214192403-069afdd76bf0
 )
 
 require (
