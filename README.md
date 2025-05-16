@@ -23,7 +23,14 @@ cd gregor-chair
 
 ## Usage
 
+First bring up the containers:
+
+```
+docker compose up -f local-docker-compose.yml up -d
+```
+
 Run the application with:
+
 
 ```
 ./local/local-coordinator.go
