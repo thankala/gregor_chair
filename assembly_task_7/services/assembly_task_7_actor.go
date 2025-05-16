@@ -4,8 +4,8 @@ import (
 	"github.com/anthdm/hollywood/actor"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
+	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
-	"github.com/thankala/gregor_chair_common/messages"
 )
 
 type AssemblyTask7Actor struct {
@@ -16,7 +16,7 @@ func NewAssemblyTask7Actor(robot controllers.RobotController) *AssemblyTask7Acto
 	return &AssemblyTask7Actor{robot: robot}
 }
 
-func (a *AssemblyTask7Actor) Task() enums.AssemblyTask {
+func (a *AssemblyTask7Actor) Task() enums.Task {
 	return enums.AssemblyTask7
 }
 
@@ -27,9 +27,9 @@ func (a *AssemblyTask7Actor) Steps() interfaces.StepHandlers[AssemblyTask7Actor]
 	}
 }
 
-func (a *AssemblyTask7Actor) processStep1GetLeftArm(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	if err := a.robot.SetCurrentTask(msg.Task); err != nil {
-		ctx.Send(ctx.PID(), msg)
+func (a *AssemblyTask7Actor) processStep1GetLeftArm(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
+		ctx.Send(ctx.PID(), event)
 		return
 	}
 
@@ -37,33 +37,31 @@ func (a *AssemblyTask7Actor) processStep1GetLeftArm(msg *messages.AssemblyTaskMe
 	a.robot.PickupItemFromStorage(enums.StorageB6L)
 	a.robot.MoveToWorkbench(enums.Workbench1)
 
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator1.String(),
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.FixtureRequested,
-		Task:        a.Task(),
 		Step:        enums.Step2,
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture3,
 		Expected:    []enums.Stage{enums.BackAttached, enums.RightArmAttached},
 		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask7Actor) processStep2AttachW1F3(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(msg.Task)
+func (a *AssemblyTask7Actor) processStep2AttachW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	a.robot.ValidateCurrentTask(event.Destination)
 	a.robot.PickAndInsert()
 	a.robot.ScrewPickAndFasten()
 	item := a.robot.PlaceItem()
 
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator1.String(),
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.ComponentAttached,
-		Task:        a.Task(),
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture3,
 		Component:   item,
 	})

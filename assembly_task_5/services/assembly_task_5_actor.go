@@ -4,15 +4,15 @@ import (
 	"github.com/anthdm/hollywood/actor"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
+	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
-	"github.com/thankala/gregor_chair_common/messages"
 )
 
 type AssemblyTask5Actor struct {
 	robot controllers.RobotController
 }
 
-func (a *AssemblyTask5Actor) Task() enums.AssemblyTask {
+func (a *AssemblyTask5Actor) Task() enums.Task {
 	return enums.AssemblyTask5
 }
 
@@ -27,37 +27,35 @@ func NewAssemblyTask5Actor(robot controllers.RobotController) *AssemblyTask5Acto
 	return &AssemblyTask5Actor{robot}
 }
 
-func (a *AssemblyTask5Actor) processStep1RequestAttachW1F2(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	if err := a.robot.SetCurrentTask(msg.Task); err != nil {
-		ctx.Send(ctx.PID(), msg)
+func (a *AssemblyTask5Actor) processStep1RequestAttachW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
+		ctx.Send(ctx.PID(), event)
 		return
 	}
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator1.String(),
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.FixtureRequested,
-		Task:        a.Task(),
 		Step:        enums.Step2,
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture2,
 		Expected:    []enums.Stage{enums.SeatAttached},
 		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask5Actor) processStep2AttachW1F2(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(msg.Task)
+func (a *AssemblyTask5Actor) processStep2AttachW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	a.robot.ValidateCurrentTask(event.Destination)
 	a.robot.ScrewPickAndFasten()
 	a.robot.ClearCurrentTask()
 
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator1.String(),
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.ComponentAttached,
-		Task:        a.Task(),
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture2,
 		Component:   enums.Screws,
 	})

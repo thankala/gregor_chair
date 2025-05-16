@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_2/services"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -8,7 +10,6 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {

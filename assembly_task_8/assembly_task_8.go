@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_8/services"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -8,7 +10,6 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {
@@ -37,9 +38,9 @@ func main() {
 			configuration.WithStorages(
 				*configuration.NewStorageConfiguration(enums.StorageB6L, enums.Position1, enums.LeftArm),
 				*configuration.NewStorageConfiguration(enums.StorageB6R, enums.Position1, enums.RightArm),
-				*configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
-				*configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
-				*configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
+				// *configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
+				// *configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
+				// *configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
 			),
 			configuration.WithWorkbenches(
 				*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture3),

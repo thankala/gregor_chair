@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_4/services"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -8,7 +10,6 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {
@@ -44,8 +45,8 @@ func main() {
 			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt1, enums.Position1, enums.NoneComponent, false),
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position2, enums.Seat, false),
+			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt1, enums.Position2, enums.Seat, false),
+			// *configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position1, enums.NoneComponent, false),
 		),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})

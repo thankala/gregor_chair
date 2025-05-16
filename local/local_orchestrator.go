@@ -12,14 +12,13 @@ import (
 	AssemblyTask6Service "github.com/thankala/gregor_chair/assembly_task_6/services"
 	AssemblyTask7Service "github.com/thankala/gregor_chair/assembly_task_7/services"
 	AssemblyTask8Service "github.com/thankala/gregor_chair/assembly_task_8/services"
-	Coordinator1Service "github.com/thankala/gregor_chair/coordinator_1/services"
-	Coordinator2Service "github.com/thankala/gregor_chair/coordinator_2/services"
+	OrchestratorService "github.com/thankala/gregor_chair/orchestrator/services"
 	"github.com/thankala/gregor_chair_common/configuration"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
+	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/logger"
-	"github.com/thankala/gregor_chair_common/messages"
 	"github.com/thankala/gregor_chair_common/services"
 )
 
@@ -30,7 +29,7 @@ type Coordinator struct {
 	Workbench1Controller *controllers.WorkbenchController
 	Workbench2Controller *controllers.WorkbenchController
 
-	children map[string]*actor.PID
+	children map[enums.Task]*actor.PID
 }
 
 func NewCoordinator(
@@ -42,7 +41,7 @@ func NewCoordinator(
 ) actor.Producer {
 	return func() actor.Receiver {
 		return &Coordinator{
-			children:             make(map[string]*actor.PID),
+			children:             make(map[enums.Task]*actor.PID),
 			Robot1Controller:     robot1Controller,
 			Robot2Controller:     robot2Controller,
 			Robot3Controller:     robot3Controller,
@@ -53,66 +52,65 @@ func NewCoordinator(
 }
 
 func (c *Coordinator) Receive(ctx *actor.Context) {
-	switch msg := ctx.Message().(type) {
+	switch event := ctx.Message().(type) {
 	case actor.Initialized:
-		c.children[enums.Coordinator1.String()] = ctx.SpawnChild(services.NewCoordinatorActor[Coordinator1Service.Coordinator1Actor](
-			Coordinator1Service.NewCoordinator1Actor(*c.Workbench1Controller), nil),
-			enums.Coordinator1.String(),
+		c.children[enums.Orchestrator] = ctx.SpawnChild(services.NewOrchestratorActor[OrchestratorService.OrchestratorActor](
+			OrchestratorService.NewOrchestratorActor(*c.Workbench1Controller, *c.Workbench2Controller), nil),
+			enums.Orchestrator.String(),
 		)
-		c.children[enums.Coordinator2.String()] = ctx.SpawnChild(services.NewCoordinatorActor[Coordinator2Service.Coordinator2Actor](
-			Coordinator2Service.NewCoordinator2Actor(*c.Workbench2Controller), nil),
-			enums.Coordinator2.String(),
-		)
-		c.children[enums.AssemblyTask1.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask1Service.AssemblyTask1Actor](
+		// c.children[enums.Coordinator2.String()] = ctx.SpawnChild(services.NewCoordinatorActor[Coordinator2Service.Coordinator2Actor](
+		// 	Coordinator2Service.NewCoordinator2Actor(*c.Workbench2Controller), nil),
+		// 	enums.Coordinator2.String(),
+		// )
+		c.children[enums.AssemblyTask1] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask1Service.AssemblyTask1Actor](
 			AssemblyTask1Service.NewAssemblyTask1Actor(*c.Robot1Controller), nil),
 			enums.AssemblyTask1.String(),
 		)
-		c.children[enums.AssemblyTask2.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask2Service.AssemblyTask2Actor](
+		c.children[enums.AssemblyTask2] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask2Service.AssemblyTask2Actor](
 			AssemblyTask2Service.NewAssemblyTask2Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask2.String(),
 		)
-		c.children[enums.AssemblyTask3.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask3Service.AssemblyTask3Actor](
+		c.children[enums.AssemblyTask3] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask3Service.AssemblyTask3Actor](
 			AssemblyTask3Service.NewAssemblyTask3Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask3.String(),
 		)
-		c.children[enums.AssemblyTask4.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask4Service.AssemblyTask4Actor](
+		c.children[enums.AssemblyTask4] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask4Service.AssemblyTask4Actor](
 			AssemblyTask4Service.NewAssemblyTask4Actor(*c.Robot1Controller), nil),
 			enums.AssemblyTask4.String(),
 		)
-		c.children[enums.AssemblyTask5.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask5Service.AssemblyTask5Actor](
+		c.children[enums.AssemblyTask5] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask5Service.AssemblyTask5Actor](
 			AssemblyTask5Service.NewAssemblyTask5Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask5.String(),
 		)
-		c.children[enums.AssemblyTask6.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask6Service.AssemblyTask6Actor](
+		c.children[enums.AssemblyTask6] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask6Service.AssemblyTask6Actor](
 			AssemblyTask6Service.NewAssemblyTask6Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask6.String(),
 		)
-		c.children[enums.AssemblyTask7.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask7Service.AssemblyTask7Actor](
+		c.children[enums.AssemblyTask7] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask7Service.AssemblyTask7Actor](
 			AssemblyTask7Service.NewAssemblyTask7Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask7.String(),
 		)
-		c.children[enums.AssemblyTask8.String()] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask8Service.AssemblyTask8Actor](
+		c.children[enums.AssemblyTask8] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask8Service.AssemblyTask8Actor](
 			AssemblyTask8Service.NewAssemblyTask8Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask8.String(),
 		)
 	case actor.Started:
-		pid := c.children[enums.AssemblyTask1.String()]
-		ctx.Send(pid, &messages.AssemblyTaskMessage{
-			Source:      enums.NoneAssemblyTask.String(),
-			Destination: enums.AssemblyTask1.String(),
-			Task:        enums.AssemblyTask1,
+		pid := c.children[enums.AssemblyTask1]
+		ctx.Send(pid, &events.AssemblyTaskEvent{
+			Source:      enums.AssemblyTask1,
+			Destination: enums.AssemblyTask1,
 			Step:        enums.Step1,
 		})
 	case actor.Stopped:
 		break
-	case *messages.CoordinatorMessage:
-		destination := c.children[msg.Destination]
-		ctx.Send(destination, msg)
-	case *messages.AssemblyTaskMessage:
-		destination := c.children[msg.Destination]
-		ctx.Send(destination, msg)
+	case *events.OrchestratorEvent:
+		destination := c.children[event.Destination]
+		ctx.Send(destination, event)
+	case *events.AssemblyTaskEvent:
+		destination := c.children[event.Destination]
+		ctx.Send(destination, event)
 	default:
-		logger.Get().Warn("Unknown event received", msg)
+		logger.Get().Warn("Unknown event received", event)
 		return
 	}
 }
@@ -158,8 +156,8 @@ func main() {
 			*configuration.NewStorageConfiguration(enums.StorageB1, enums.Position1, enums.Legs),
 			*configuration.NewStorageConfiguration(enums.StorageB2, enums.Position1, enums.Base),
 			*configuration.NewStorageConfiguration(enums.StorageB3, enums.Position2, enums.SeatPlate),
-			*configuration.NewStorageConfiguration(enums.StorageB7A, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB7B, enums.Position2, enums.NoneComponent),
+			// *configuration.NewStorageConfiguration(enums.StorageB7A, enums.Position1, enums.NoneComponent),
+			// *configuration.NewStorageConfiguration(enums.StorageB7B, enums.Position2, enums.NoneComponent),
 		),
 		configuration.WithWorkbenches(
 			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture1),
@@ -168,16 +166,16 @@ func main() {
 		configuration.WithConveyorBelts(
 			*configuration.NewConveyorBeltConfiguration(
 				enums.ConveyorBelt1,
-				enums.Position1,
-				enums.NoneComponent,
-				false,
-			),
-			*configuration.NewConveyorBeltConfiguration(
-				enums.ConveyorBelt2,
 				enums.Position2,
 				enums.Seat,
 				false,
 			),
+			// *configuration.NewConveyorBeltConfiguration(
+			// 	enums.ConveyorBelt2,
+			// 	enums.Position1,
+			// 	enums.NoneComponent,
+			// 	false,
+			// ),
 		),
 	)
 
@@ -202,32 +200,23 @@ func main() {
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(enums.StorageB6L, enums.Position1, enums.LeftArm),
 			*configuration.NewStorageConfiguration(enums.StorageB6R, enums.Position1, enums.RightArm),
-			*configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
+			// *configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
+			// *configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
+			// *configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
 		),
 		configuration.WithWorkbenches(
 			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture3),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(
-				enums.ConveyorBelt2,
-				enums.Position1,
-				enums.Back,
-				false,
-			),
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt3,
-				enums.Position1,
-				enums.NoneComponent,
-				true,
-			),
+			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position1, enums.Back, false),
+			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt3, enums.Position1, enums.NoneComponent, true),
 		),
 	)
 
 	workbench1Controller := controllers.NewWorkbenchController(
 		redisStorer,
 		workbench1HttpClient,
-		configuration.WithWorkbenchKey(enums.Workbench1.String()),
+		configuration.WithWorkbenchKey(enums.Workbench1),
 		configuration.WithFixture(
 			*configuration.NewFixtureConfiguration(enums.Fixture1, []string{enums.Robot1.String()}),
 			*configuration.NewFixtureConfiguration(enums.Fixture2, []string{enums.Robot2.String()}),
@@ -261,7 +250,7 @@ func main() {
 	workbench2Controller := controllers.NewWorkbenchController(
 		redisStorer,
 		workbench2HttpClient,
-		configuration.WithWorkbenchKey(enums.Workbench2.String()),
+		configuration.WithWorkbenchKey(enums.Workbench2),
 		configuration.WithFixture(
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture1,
@@ -288,6 +277,6 @@ func main() {
 		robot2Controller,
 		robot3Controller,
 		workbench1Controller,
-		workbench2Controller), "coordinator")
+		workbench2Controller), "local")
 	<-make(chan struct{})
 }
