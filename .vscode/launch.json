@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug local_coordinator",
+            "name": "Debug Local",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/local/local_coordinator.go",
+            "program": "${workspaceFolder}/local/local_orchestrator.go",
             // "env": {
             //     "ROBOT_1_URL" : "http://192.168.0.119:8001",
             //     "ROBOT_2_URL" : "http://192.168.0.119:8002",
