@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_5/services"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -8,7 +10,6 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {
@@ -34,12 +35,32 @@ func main() {
 		httpClient,
 		configuration.WithRobotKey(enums.Robot2.String()),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB4, enums.Position1, enums.Castors),
-			*configuration.NewStorageConfiguration(enums.StorageB5, enums.Position1, enums.Lift),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB4,
+				enums.Position1,
+				enums.Castors,
+				configuration.NewLocation(float64(170), float64(-160), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB5,
+				enums.Position1,
+				enums.Lift,
+				configuration.NewLocation(float64(290), float64(20), float64(20), float64(0)),
+			),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture2),
-			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture2,
+				configuration.NewLocation(float64(260), float64(-110), float64(90), float64(0)),
+			),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench2,
+				enums.Position2,
+				enums.Fixture1,
+				configuration.NewLocation(float64(270), float64(80), float64(40), float64(0)),
+			),
 		),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})

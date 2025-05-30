@@ -22,12 +22,12 @@ func (a *AssemblyTask6Actor) Task() enums.Task {
 
 func (a *AssemblyTask6Actor) Steps() interfaces.StepHandlers[AssemblyTask6Actor] {
 	return interfaces.StepHandlers[AssemblyTask6Actor]{
-		enums.Step1: a.processStep1RequestFixture,
-		enums.Step2: a.processStep2GetBackAndAttachW1F3,
+		enums.Step1: a.requestFixtureW1F3,
+		enums.Step2: a.getBackAndAttach,
 	}
 }
 
-func (a *AssemblyTask6Actor) processStep1RequestFixture(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask6Actor) requestFixtureW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
@@ -41,19 +41,18 @@ func (a *AssemblyTask6Actor) processStep1RequestFixture(event *events.AssemblyTa
 		Caller:      a.robot.Key(),
 		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture3,
-		Expected:    []enums.Stage{enums.ScrewsAttached},
+		Expected:    []enums.Stage{enums.SeatAttached},
 		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask6Actor) processStep2GetBackAndAttachW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask6Actor) getBackAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	a.robot.ValidateCurrentTask(event.Destination)
 	a.robot.MoveToConveyorBelt(enums.ConveyorBelt2)
 	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt2)
 	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.PickAndInsert()
-	a.robot.ScrewPickAndFasten()
-	item := a.robot.PlaceItem()
+	a.robot.Screw()
+	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{

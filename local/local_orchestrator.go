@@ -153,15 +153,37 @@ func main() {
 		robot1HttpClient,
 		configuration.WithRobotKey(enums.Robot1.String()),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB1, enums.Position1, enums.Legs),
-			*configuration.NewStorageConfiguration(enums.StorageB2, enums.Position1, enums.Base),
-			*configuration.NewStorageConfiguration(enums.StorageB3, enums.Position2, enums.SeatPlate),
-			// *configuration.NewStorageConfiguration(enums.StorageB7A, enums.Position1, enums.NoneComponent),
-			// *configuration.NewStorageConfiguration(enums.StorageB7B, enums.Position2, enums.NoneComponent),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB1,
+				enums.Position1,
+				enums.Legs,
+				configuration.NewLocation(float64(210), float64(90), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB2,
+				enums.Position1,
+				enums.Base,
+				configuration.NewLocation(float64(200), float64(180), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB3,
+				enums.Position2,
+				enums.SeatPlate,
+				configuration.NewLocation(float64(290), float64(0), float64(20), float64(0))),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture1),
-			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture1,
+				configuration.NewLocation(float64(260), float64(110), float64(90), float64(0)),
+			),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench2,
+				enums.Position2,
+				enums.Fixture1,
+				configuration.NewLocation(float64(270), float64(-90), float64(40), float64(0)),
+			),
 		),
 		configuration.WithConveyorBelts(
 			*configuration.NewConveyorBeltConfiguration(
@@ -169,13 +191,8 @@ func main() {
 				enums.Position2,
 				enums.Seat,
 				false,
+				configuration.NewLocation(float64(230), float64(-120), float64(40), float64(0)),
 			),
-			// *configuration.NewConveyorBeltConfiguration(
-			// 	enums.ConveyorBelt2,
-			// 	enums.Position1,
-			// 	enums.NoneComponent,
-			// 	false,
-			// ),
 		),
 	)
 
@@ -184,12 +201,32 @@ func main() {
 		robot2HttpClient,
 		configuration.WithRobotKey(enums.Robot2.String()),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB4, enums.Position1, enums.Castors),
-			*configuration.NewStorageConfiguration(enums.StorageB5, enums.Position1, enums.Lift),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB4,
+				enums.Position1,
+				enums.Castors,
+				configuration.NewLocation(float64(170), float64(-160), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB5,
+				enums.Position1,
+				enums.Lift,
+				configuration.NewLocation(float64(290), float64(20), float64(20), float64(0)),
+			),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture2),
-			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture2,
+				configuration.NewLocation(float64(260), float64(-110), float64(90), float64(0)),
+			),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench2,
+				enums.Position2,
+				enums.Fixture1,
+				configuration.NewLocation(float64(270), float64(80), float64(40), float64(0)),
+			),
 		),
 	)
 
@@ -198,18 +235,42 @@ func main() {
 		robot3HttpClient,
 		configuration.WithRobotKey(enums.Robot3.String()),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB6L, enums.Position1, enums.LeftArm),
-			*configuration.NewStorageConfiguration(enums.StorageB6R, enums.Position1, enums.RightArm),
-			// *configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
-			// *configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
-			// *configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB6L,
+				enums.Position1,
+				enums.LeftArm,
+				configuration.NewLocation(float64(210), float64(170), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB6R,
+				enums.Position1,
+				enums.RightArm,
+				configuration.NewLocation(float64(160), float64(180), float64(20), float64(0)),
+			),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture3),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture3,
+				configuration.NewLocation(float64(260), float64(0), float64(90), float64(0)),
+			),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position1, enums.Back, false),
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt3, enums.Position1, enums.NoneComponent, true),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt2,
+				enums.Position1,
+				enums.Back,
+				false,
+				configuration.NewLocation(float64(220), float64(190), float64(20), float64(0)),
+			),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt3,
+				enums.Position1,
+				enums.NoneComponent,
+				true,
+				configuration.NewLocation(float64(220), float64(190), float64(20), float64(0)),
+			),
 		),
 	)
 
@@ -224,25 +285,25 @@ func main() {
 		),
 		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
 			enums.Fixture1: {
-				enums.Initial:      "FREE",
-				enums.LegsAttached: "ASSEMBLING",
-				enums.BaseAttached: "COMPLETED",
+				// enums.Initial: "FREE",
+				// enums.LegsAttached: "ASSEMBLING",
+				enums.LegsAttached: "COMPLETED",
 			},
 			enums.Fixture2: {
-				enums.Initial:         "FREE",
-				enums.BaseAttached:    "ASSEMBLING",
-				enums.CastorsAttached: "ASSEMBLING",
-				enums.LiftAttached:    "PENDING",
-				enums.SeatAttached:    "ASSEMBLING",
-				enums.ScrewsAttached:  "COMPLETED",
+				// enums.Initial: "FREE",
+				// enums.BaseAttached:    "ASSEMBLING",
+				// enums.CastorsAttached: "ASSEMBLING",
+				// enums.LiftAttached: "PENDING",
+				// enums.SeatAttached:   "ASSEMBLING",
+				enums.SeatAttached: "COMPLETED",
 			},
 			enums.Fixture3: {
-				enums.Initial:        "FREE",
-				enums.ScrewsAttached: "ASSEMBLING",
+				// enums.Initial:        "FREE",
+				// enums.ScrewsAttached: "ASSEMBLING",
 				// enums.BackAttached:     "COMPLETED",
-				enums.LeftArmAttached:  "ASSEMBLING",
-				enums.RightArmAttached: "ASSEMBLING",
-				enums.Completed:        "COMPLETED",
+				// enums.LeftArmAttached:  "ASSEMBLING",
+				// enums.RightArmAttached: "ASSEMBLING",
+				enums.Completed: "COMPLETED",
 			},
 		}),
 	)
@@ -259,10 +320,10 @@ func main() {
 		),
 		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
 			enums.Fixture1: {
-				enums.Initial:            "FREE",
-				enums.InitialSeat:        "ASSEMBLING",
-				enums.SeatPlateAttached:  "PENDING",
-				enums.SeatScrewsAttached: "ASSEMBLING",
+				// enums.Initial:            "FREE",
+				// enums.InitialSeat:        "ASSEMBLING",
+				// enums.SeatPlateAttached: "PENDING",
+				// enums.SeatScrewsAttached: "ASSEMBLING",
 			},
 		}),
 	)

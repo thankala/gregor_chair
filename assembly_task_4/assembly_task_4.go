@@ -34,19 +34,42 @@ func main() {
 		httpClient,
 		configuration.WithRobotKey(enums.Robot1.String()),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB1, enums.Position1, enums.Legs),
-			*configuration.NewStorageConfiguration(enums.StorageB2, enums.Position1, enums.Base),
-			*configuration.NewStorageConfiguration(enums.StorageB3, enums.Position2, enums.SeatPlate),
-			*configuration.NewStorageConfiguration(enums.StorageB7A, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB7B, enums.Position2, enums.NoneComponent),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB1,
+				enums.Position1,
+				enums.Legs,
+				configuration.NewLocation(float64(210), float64(90), float64(20), float64(0))),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB2,
+				enums.Position1,
+				enums.Base,
+				configuration.NewLocation(float64(200), float64(180), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB3,
+				enums.Position2,
+				enums.SeatPlate,
+				configuration.NewLocation(float64(290), float64(0), float64(20), float64(0))),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture1),
-			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture1,
+				configuration.NewLocation(float64(260), float64(110), float64(90), float64(0))),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench2,
+				enums.Position2,
+				enums.Fixture1,
+				configuration.NewLocation(float64(270), float64(-90), float64(40), float64(0))),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt1, enums.Position2, enums.Seat, false),
-			// *configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position1, enums.NoneComponent, false),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt1,
+				enums.Position2,
+				enums.Seat,
+				false,
+				configuration.NewLocation(float64(230), float64(-120), float64(40), float64(0))),
 		),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})

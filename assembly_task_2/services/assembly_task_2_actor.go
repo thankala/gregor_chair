@@ -22,14 +22,12 @@ func (a *AssemblyTask2Actor) Task() enums.Task {
 
 func (a *AssemblyTask2Actor) Steps() interfaces.StepHandlers[AssemblyTask2Actor] {
 	return interfaces.StepHandlers[AssemblyTask2Actor]{
-		enums.Step1: a.processStep1RequestFixture,
-		enums.Step2: a.processStep2GetCastorsAndAttachW1F2,
-		enums.Step3: a.processStep3GetLift,
-		enums.Step4: a.processStep4AttachW1F2,
+		enums.Step1: a.requestFixtureAtW1F2,
+		enums.Step2: a.getCastorsAndAttach,
 	}
 }
 
-func (a *AssemblyTask2Actor) processStep1RequestFixture(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask2Actor) requestFixtureAtW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
@@ -43,59 +41,20 @@ func (a *AssemblyTask2Actor) processStep1RequestFixture(event *events.AssemblyTa
 		Step:        enums.Step2,
 		Caller:      a.robot.Key(),
 		Fixture:     enums.Fixture2,
-		Expected:    []enums.Stage{enums.BaseAttached},
+		Expected:    []enums.Stage{enums.LegsAttached},
 		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask2Actor) processStep2GetCastorsAndAttachW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask2Actor) getCastorsAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
+	a.robot.MoveToWorkbench(enums.Workbench1)
+	a.robot.Flip()
 	a.robot.MoveToStorage(enums.StorageB4)
 	a.robot.PickupItemFromStorage(enums.StorageB4)
 	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.PickAndPlace()
-	item := a.robot.PlaceItem()
-
-	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
-		Source:      a.Task(),
-		Destination: enums.Orchestrator,
-		Workbench:   enums.Workbench1,
-		Type:        enums.ComponentAttached,
-		Caller:      a.robot.Key(),
-		Fixture:     enums.Fixture2,
-		Component:   item,
-	})
-
-	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
-		Source:      a.Task(),
-		Destination: a.Task(),
-		Step:        enums.Step3,
-	})
-}
-
-func (a *AssemblyTask2Actor) processStep3GetLift(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToStorage(enums.StorageB5)
-	a.robot.PickupItemFromStorage(enums.StorageB5)
-
-	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
-		Source:      a.Task(),
-		Destination: enums.Orchestrator,
-		Workbench:   enums.Workbench1,
-		Type:        enums.FixtureRequested,
-		Step:        enums.Step4,
-		Caller:      a.robot.Key(),
-		Fixture:     enums.Fixture2,
-		Expected:    []enums.Stage{enums.CastorsAttached},
-		IsPickup:    false,
-	})
-}
-
-func (a *AssemblyTask2Actor) processStep4AttachW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.PickAndFlipAndPress()
-	item := a.robot.PlaceItem()
+	a.robot.Press()
+	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{

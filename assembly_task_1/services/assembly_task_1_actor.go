@@ -1,4 +1,4 @@
-package services
+package assembly_task_1
 
 import (
 	"github.com/anthdm/hollywood/actor"
@@ -22,14 +22,13 @@ func (a *AssemblyTask1Actor) Task() enums.Task {
 
 func (a *AssemblyTask1Actor) Steps() interfaces.StepHandlers[AssemblyTask1Actor] {
 	return interfaces.StepHandlers[AssemblyTask1Actor]{
-		enums.Step1: a.processStep1RequestFixture,
-		enums.Step2: a.processStep2GetLegsAndPlaceW1F1,
-		enums.Step3: a.processStep3GetBase,
-		enums.Step4: a.processStep4AttachW1F1,
+		enums.Step1: a.requestFixtureAtW1F1,
+		enums.Step2: a.getBaseAndPlace,
+		enums.Step3: a.getLegsAndAttach,
 	}
 }
 
-func (a *AssemblyTask1Actor) processStep1RequestFixture(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask1Actor) requestFixtureAtW1F1(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
@@ -48,12 +47,13 @@ func (a *AssemblyTask1Actor) processStep1RequestFixture(event *events.AssemblyTa
 	})
 }
 
-func (a *AssemblyTask1Actor) processStep2GetLegsAndPlaceW1F1(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask1Actor) getBaseAndPlace(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToStorage(enums.StorageB1)
-	a.robot.PickupItemFromStorage(enums.StorageB1)
+	a.robot.MoveToStorage(enums.StorageB2)
+	a.robot.PickupItemFromStorage(enums.StorageB2)
 	a.robot.MoveToWorkbench(enums.Workbench1)
-	item := a.robot.PlaceItem()
+	a.robot.Place()
+	item := a.robot.ReleaseItem()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
@@ -72,30 +72,13 @@ func (a *AssemblyTask1Actor) processStep2GetLegsAndPlaceW1F1(event *events.Assem
 	})
 }
 
-func (a *AssemblyTask1Actor) processStep3GetBase(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask1Actor) getLegsAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToStorage(enums.StorageB2)
-	a.robot.PickupItemFromStorage(enums.StorageB2)
-
-	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
-		Source:      a.Task(),
-		Destination: enums.Orchestrator,
-		Type:        enums.FixtureRequested,
-		Step:        enums.Step4,
-		Caller:      a.robot.Key(),
-		Workbench:   enums.Workbench1,
-		Fixture:     enums.Fixture1,
-		Expected:    []enums.Stage{enums.LegsAttached},
-		IsPickup:    false,
-	})
-}
-
-func (a *AssemblyTask1Actor) processStep4AttachW1F1(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(event.Destination)
+	a.robot.MoveToStorage(enums.StorageB1)
+	a.robot.PickupItemFromStorage(enums.StorageB1)
 	a.robot.MoveToWorkbench(enums.Workbench1)
-	//a.robot.PickAndPlace()
-	a.robot.PickAndInsert()
-	item := a.robot.PlaceItem()
+	a.robot.Screw()
+	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
@@ -107,7 +90,6 @@ func (a *AssemblyTask1Actor) processStep4AttachW1F1(event *events.AssemblyTaskEv
 		Fixture:     enums.Fixture1,
 		Component:   item,
 	})
-
 	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
 		Source:      a.Task(),
 		Destination: enums.AssemblyTask4,

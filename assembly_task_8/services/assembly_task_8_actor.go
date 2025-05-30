@@ -22,20 +22,16 @@ func (a *AssemblyTask8Actor) Task() enums.Task {
 
 func (a *AssemblyTask8Actor) Steps() interfaces.StepHandlers[AssemblyTask8Actor] {
 	return interfaces.StepHandlers[AssemblyTask8Actor]{
-		enums.Step1: a.processStep1GetRightArm,
-		enums.Step2: a.processStep2AttachW1F3,
+		enums.Step1: a.requestFixtureAtW1F3,
+		enums.Step2: a.getRightArmAndAttach,
 	}
 }
 
-func (a *AssemblyTask8Actor) processStep1GetRightArm(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask8Actor) requestFixtureAtW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
 	}
-
-	a.robot.MoveToStorage(enums.StorageB6R)
-	a.robot.PickupItemFromStorage(enums.StorageB6R)
-	a.robot.MoveToWorkbench(enums.Workbench1)
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
@@ -50,10 +46,14 @@ func (a *AssemblyTask8Actor) processStep1GetRightArm(event *events.AssemblyTaskE
 	})
 }
 
-func (a *AssemblyTask8Actor) processStep2AttachW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask8Actor) getRightArmAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.PickAndFlipAndPress()
-	item := a.robot.PlaceItem()
+	a.robot.MoveToStorage(enums.StorageB6R)
+	a.robot.PickupItemFromStorage(enums.StorageB6R)
+	a.robot.MoveToWorkbench(enums.Workbench1)
+	a.robot.Screw()
+	item := a.robot.ReleaseItem()
+	a.robot.ClearCurrentTask()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
@@ -64,6 +64,4 @@ func (a *AssemblyTask8Actor) processStep2AttachW1F3(event *events.AssemblyTaskEv
 		Fixture:     enums.Fixture3,
 		Component:   item,
 	})
-
-	a.robot.ClearCurrentTask()
 }
