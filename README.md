@@ -33,7 +33,7 @@ Run the application with:
 
 
 ```
-./local/local-coordinator.go
+./local/local-orchestrator.go
 ```
 
 ## License
