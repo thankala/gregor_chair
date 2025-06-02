@@ -5,19 +5,7 @@ for dir in */ ; do
         # Navigate into the directory
         cd "$dir" || exit
 
-        # Get the current branch name
-        branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-
-        # If git fails (not a git repo), default to master or skip
-        if [[ -z "$branch" || "$branch" == "HEAD" ]]; then
-            echo "Not a git repository or detached HEAD in ${dir}, skipping 'go get' for branch."
-        else
-            # Run 'go get' with the current branch
-            echo "Using branch: $branch"
-            go get -v -u "github.com/thankala/gregor_chair_common"
-        fi
-
-        go get -u all
+        go get -u ./...
         # Navigate back to the parent directory
         cd ..
     else
