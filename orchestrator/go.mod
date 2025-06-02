@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/anthdm/hollywood v1.0.5
-	github.com/thankala/gregor_chair_common v0.0.0-20250602103306-821f5147d7d7
+	github.com/thankala/gregor_chair_common v0.0.0-20250602105415-c701abeaf55a
 )
 
 require (
