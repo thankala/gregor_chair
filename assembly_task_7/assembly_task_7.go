@@ -32,7 +32,7 @@ func main() {
 	robot3Controller := controllers.NewRobotController(
 		redisStorer,
 		httpClient,
-		configuration.WithRobotKey(enums.Robot3.String()),
+		configuration.WithRobotKey(enums.Robot3),
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(
 				enums.StorageB6L,
@@ -74,7 +74,7 @@ func main() {
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 
-	e.Spawn(services.NewAssemblyTaskActor[AssemblyTaskServices.AssemblyTask7Actor](
+	e.Spawn(services.NewAssemblyTaskActor(
 		AssemblyTaskServices.NewAssemblyTask7Actor(*robot3Controller), server),
 		enums.AssemblyTask7.String(),
 	)

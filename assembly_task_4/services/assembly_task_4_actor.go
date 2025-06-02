@@ -43,7 +43,6 @@ func (a *AssemblyTask4Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEven
 		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Expected:    []enums.Stage{enums.Initial},
-		IsPickup:    false,
 	})
 }
 
@@ -53,7 +52,6 @@ func (a *AssemblyTask4Actor) getSeatAndPlace(event *events.AssemblyTaskEvent, ct
 	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt1)
 	a.robot.MoveToWorkbench(enums.Workbench2)
 	a.robot.Place()
-	// a.robot.Flip()
 	item := a.robot.ReleaseItem()
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{

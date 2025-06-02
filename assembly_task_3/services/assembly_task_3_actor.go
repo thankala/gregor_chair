@@ -41,7 +41,6 @@ func (a *AssemblyTask3Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEven
 		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture2,
 		Expected:    []enums.Stage{enums.CastorsAttached},
-		IsPickup:    false,
 	})
 }
 

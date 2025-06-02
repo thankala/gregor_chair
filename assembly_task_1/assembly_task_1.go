@@ -33,7 +33,7 @@ func main() {
 	robot1Controller := controllers.NewRobotController(
 		redisStorer,
 		httpClient,
-		configuration.WithRobotKey(enums.Robot1.String()),
+		configuration.WithRobotKey(enums.Robot1),
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(
 				enums.StorageB1,

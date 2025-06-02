@@ -42,14 +42,11 @@ func (a *AssemblyTask2Actor) requestFixtureAtW1F2(event *events.AssemblyTaskEven
 		Caller:      a.robot.Key(),
 		Fixture:     enums.Fixture2,
 		Expected:    []enums.Stage{enums.LegsAttached},
-		IsPickup:    false,
 	})
 }
 
 func (a *AssemblyTask2Actor) getCastorsAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.Flip()
 	a.robot.MoveToStorage(enums.StorageB4)
 	a.robot.PickupItemFromStorage(enums.StorageB4)
 	a.robot.MoveToWorkbench(enums.Workbench1)

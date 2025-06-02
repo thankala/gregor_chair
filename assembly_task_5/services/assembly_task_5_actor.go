@@ -19,10 +19,9 @@ func (a *AssemblyTask5Actor) Task() enums.Task {
 func (a *AssemblyTask5Actor) Steps() interfaces.StepHandlers[AssemblyTask5Actor] {
 	return interfaces.StepHandlers[AssemblyTask5Actor]{
 		enums.Step1: a.requestFixtureAtW2F1,
-		enums.Step2: a.moveToW2AndRequestPickup,
-		enums.Step3: a.pickup,
-		enums.Step4: a.requestFixtureAtW1F2,
-		enums.Step5: a.attachComposite,
+		enums.Step2: a.moveToW2AndPickup,
+		enums.Step3: a.requestFixtureAtW1F2,
+		enums.Step4: a.attachComposite,
 	}
 }
 
@@ -35,8 +34,6 @@ func (a *AssemblyTask5Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEven
 		ctx.Send(ctx.PID(), event)
 		return
 	}
-	// a.robot.MoveToWorkbench(enums.Workbench2)
-	// logger.Get().Info("Fixture requested: ", enums.Fi "Workbench", "Robot", a.robot.Key(), "Task", a.Task())
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
 		Destination: enums.Orchestrator,
@@ -46,49 +43,40 @@ func (a *AssemblyTask5Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEven
 		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Expected:    []enums.Stage{enums.SeatPlateAttached},
-		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask5Actor) moveToW2AndRequestPickup(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+func (a *AssemblyTask5Actor) moveToW2AndPickup(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
 	a.robot.MoveToWorkbench(enums.Workbench2)
+	a.robot.PickupItemFromWorkbench(event.Component, enums.Workbench2)
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
 		Destination: enums.Orchestrator,
-		Type:        enums.FixtureRequested,
-		Step:        enums.Step3,
+		Type:        enums.ComponentPickedUp,
 		Caller:      a.robot.Key(),
 		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Expected:    []enums.Stage{enums.SeatPlateAttached},
-		IsPickup:    true,
 	})
-}
-
-func (a *AssemblyTask5Actor) pickup(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.PickupItemFromWorkbench(event.Component, enums.Workbench2)
 	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
 		Source:      a.Task(),
 		Destination: enums.AssemblyTask5,
-		Step:        enums.Step4,
+		Step:        enums.Step3,
 	})
 }
 
 func (a *AssemblyTask5Actor) requestFixtureAtW1F2(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
 		Destination: enums.Orchestrator,
 		Type:        enums.FixtureRequested,
-		Step:        enums.Step5,
+		Step:        enums.Step4,
 		Caller:      a.robot.Key(),
 		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture2,
 		Expected:    []enums.Stage{enums.LiftAttached},
-		IsPickup:    false,
 	})
 }
 
@@ -115,15 +103,3 @@ func (a *AssemblyTask5Actor) attachComposite(event *events.AssemblyTaskEvent, ct
 		Step:        enums.Step1,
 	})
 }
-
-// ctx.Send(ctx.PID(), &events.OrchestratorEvent{
-// 		Source:      a.Task(),
-// 		Destination: enums.Orchestrator,
-// 		Type:        enums.FixtureRequested,
-// 		Step:        enums.Step3,
-// 		Caller:      a.robot.Key(),
-// 		Workbench:   enums.Workbench1,
-// 		Fixture:     enums.Fixture2,
-// 		Expected:    []enums.Stage{enums.LiftAttached},
-// 		IsPickup:    false,
-// 	})

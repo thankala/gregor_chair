@@ -42,7 +42,6 @@ func (a *AssemblyTask7Actor) requestFixtureAtW1F3(event *events.AssemblyTaskEven
 		Workbench:   enums.Workbench1,
 		Fixture:     enums.Fixture3,
 		Expected:    []enums.Stage{enums.BackAttached, enums.RightArmAttached},
-		IsPickup:    false,
 	})
 }
 

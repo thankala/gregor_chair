@@ -22,7 +22,7 @@ import (
 	"github.com/thankala/gregor_chair_common/services"
 )
 
-type Coordinator struct {
+type Orchestrator struct {
 	Robot1Controller     *controllers.RobotController
 	Robot2Controller     *controllers.RobotController
 	Robot3Controller     *controllers.RobotController
@@ -32,7 +32,7 @@ type Coordinator struct {
 	children map[enums.Task]*actor.PID
 }
 
-func NewCoordinator(
+func NewOrchestrator(
 	robot1Controller *controllers.RobotController,
 	robot2Controller *controllers.RobotController,
 	robot3Controller *controllers.RobotController,
@@ -40,7 +40,7 @@ func NewCoordinator(
 	workbench2Controller *controllers.WorkbenchController,
 ) actor.Producer {
 	return func() actor.Receiver {
-		return &Coordinator{
+		return &Orchestrator{
 			children:             make(map[enums.Task]*actor.PID),
 			Robot1Controller:     robot1Controller,
 			Robot2Controller:     robot2Controller,
@@ -51,55 +51,54 @@ func NewCoordinator(
 	}
 }
 
-func (c *Coordinator) Receive(ctx *actor.Context) {
+func (c *Orchestrator) Receive(ctx *actor.Context) {
 	switch event := ctx.Message().(type) {
 	case actor.Initialized:
-		c.children[enums.Orchestrator] = ctx.SpawnChild(services.NewOrchestratorActor[OrchestratorService.OrchestratorActor](
-			OrchestratorService.NewOrchestratorActor(*c.Workbench1Controller, *c.Workbench2Controller), nil),
+		c.children[enums.Orchestrator] = ctx.SpawnChild(
+			services.NewOrchestratorActor[OrchestratorService.OrchestratorActor](
+				OrchestratorService.NewOrchestratorActor(
+					[]controllers.WorkbenchController{*c.Workbench1Controller, *c.Workbench2Controller},
+					[]controllers.RobotController{*c.Robot1Controller, *c.Robot2Controller, *c.Robot3Controller}),
+				nil),
 			enums.Orchestrator.String(),
 		)
-		// c.children[enums.Coordinator2.String()] = ctx.SpawnChild(services.NewCoordinatorActor[Coordinator2Service.Coordinator2Actor](
-		// 	Coordinator2Service.NewCoordinator2Actor(*c.Workbench2Controller), nil),
-		// 	enums.Coordinator2.String(),
-		// )
-		c.children[enums.AssemblyTask1] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask1Service.AssemblyTask1Actor](
+		c.children[enums.AssemblyTask1] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask1Service.NewAssemblyTask1Actor(*c.Robot1Controller), nil),
 			enums.AssemblyTask1.String(),
 		)
-		c.children[enums.AssemblyTask2] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask2Service.AssemblyTask2Actor](
+		c.children[enums.AssemblyTask2] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask2Service.NewAssemblyTask2Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask2.String(),
 		)
-		c.children[enums.AssemblyTask3] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask3Service.AssemblyTask3Actor](
+		c.children[enums.AssemblyTask3] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask3Service.NewAssemblyTask3Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask3.String(),
 		)
-		c.children[enums.AssemblyTask4] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask4Service.AssemblyTask4Actor](
+		c.children[enums.AssemblyTask4] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask4Service.NewAssemblyTask4Actor(*c.Robot1Controller), nil),
 			enums.AssemblyTask4.String(),
 		)
-		c.children[enums.AssemblyTask5] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask5Service.AssemblyTask5Actor](
+		c.children[enums.AssemblyTask5] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask5Service.NewAssemblyTask5Actor(*c.Robot2Controller), nil),
 			enums.AssemblyTask5.String(),
 		)
-		c.children[enums.AssemblyTask6] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask6Service.AssemblyTask6Actor](
+		c.children[enums.AssemblyTask6] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask6Service.NewAssemblyTask6Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask6.String(),
 		)
-		c.children[enums.AssemblyTask7] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask7Service.AssemblyTask7Actor](
+		c.children[enums.AssemblyTask7] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask7Service.NewAssemblyTask7Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask7.String(),
 		)
-		c.children[enums.AssemblyTask8] = ctx.SpawnChild(services.NewAssemblyTaskActor[AssemblyTask8Service.AssemblyTask8Actor](
+		c.children[enums.AssemblyTask8] = ctx.SpawnChild(services.NewAssemblyTaskActor(
 			AssemblyTask8Service.NewAssemblyTask8Actor(*c.Robot3Controller), nil),
 			enums.AssemblyTask8.String(),
 		)
 	case actor.Started:
-		pid := c.children[enums.AssemblyTask1]
-		ctx.Send(pid, &events.AssemblyTaskEvent{
-			Source:      enums.AssemblyTask1,
-			Destination: enums.AssemblyTask1,
-			Step:        enums.Step1,
+		pid := c.children[enums.Orchestrator]
+		ctx.Send(pid, &events.OrchestratorEvent{
+			Destination: enums.Orchestrator,
+			Type:        enums.AssemblyStarted,
 		})
 	case actor.Stopped:
 		break
@@ -151,7 +150,7 @@ func main() {
 	robot1Controller := controllers.NewRobotController(
 		redisStorer,
 		robot1HttpClient,
-		configuration.WithRobotKey(enums.Robot1.String()),
+		configuration.WithRobotKey(enums.Robot1),
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(
 				enums.StorageB1,
@@ -199,7 +198,7 @@ func main() {
 	robot2Controller := controllers.NewRobotController(
 		redisStorer,
 		robot2HttpClient,
-		configuration.WithRobotKey(enums.Robot2.String()),
+		configuration.WithRobotKey(enums.Robot2),
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(
 				enums.StorageB4,
@@ -233,7 +232,7 @@ func main() {
 	robot3Controller := controllers.NewRobotController(
 		redisStorer,
 		robot3HttpClient,
-		configuration.WithRobotKey(enums.Robot3.String()),
+		configuration.WithRobotKey(enums.Robot3),
 		configuration.WithStorages(
 			*configuration.NewStorageConfiguration(
 				enums.StorageB6L,
@@ -279,33 +278,19 @@ func main() {
 		workbench1HttpClient,
 		configuration.WithWorkbenchKey(enums.Workbench1),
 		configuration.WithFixture(
-			*configuration.NewFixtureConfiguration(enums.Fixture1, []string{enums.Robot1.String()}),
-			*configuration.NewFixtureConfiguration(enums.Fixture2, []string{enums.Robot2.String()}),
-			*configuration.NewFixtureConfiguration(enums.Fixture3, []string{enums.Robot3.String()}),
+			*configuration.NewFixtureConfiguration(
+				enums.Fixture1,
+				[]string{enums.Robot1.String()},
+				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Completed}),
+			*configuration.NewFixtureConfiguration(
+				enums.Fixture2,
+				[]string{enums.Robot2.String()},
+				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Pending, enums.Completed}),
+			*configuration.NewFixtureConfiguration(
+				enums.Fixture3,
+				[]string{enums.Robot3.String()},
+				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Completed}),
 		),
-		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
-			enums.Fixture1: {
-				// enums.Initial: "FREE",
-				// enums.LegsAttached: "ASSEMBLING",
-				enums.LegsAttached: "COMPLETED",
-			},
-			enums.Fixture2: {
-				// enums.Initial: "FREE",
-				// enums.BaseAttached:    "ASSEMBLING",
-				// enums.CastorsAttached: "ASSEMBLING",
-				// enums.LiftAttached: "PENDING",
-				// enums.SeatAttached:   "ASSEMBLING",
-				enums.SeatAttached: "COMPLETED",
-			},
-			enums.Fixture3: {
-				// enums.Initial:        "FREE",
-				// enums.ScrewsAttached: "ASSEMBLING",
-				// enums.BackAttached:     "COMPLETED",
-				// enums.LeftArmAttached:  "ASSEMBLING",
-				// enums.RightArmAttached: "ASSEMBLING",
-				enums.Completed: "COMPLETED",
-			},
-		}),
 	)
 
 	workbench2Controller := controllers.NewWorkbenchController(
@@ -316,16 +301,9 @@ func main() {
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture1,
 				[]string{enums.Robot1.String(), enums.Robot2.String()},
+				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Pending},
 			),
 		),
-		configuration.WithStateMapping(map[enums.Fixture]map[enums.Stage]string{
-			enums.Fixture1: {
-				// enums.Initial:            "FREE",
-				// enums.InitialSeat:        "ASSEMBLING",
-				// enums.SeatPlateAttached: "PENDING",
-				// enums.SeatScrewsAttached: "ASSEMBLING",
-			},
-		}),
 	)
 
 	engine, err := actor.NewEngine(actor.NewEngineConfig())
@@ -333,7 +311,7 @@ func main() {
 		panic(err)
 	}
 
-	engine.Spawn(NewCoordinator(
+	engine.Spawn(NewOrchestrator(
 		robot1Controller,
 		robot2Controller,
 		robot3Controller,

@@ -1,9 +1,8 @@
 package services
 
 import (
-	"slices"
-
 	"fmt"
+	"slices"
 
 	"github.com/anthdm/hollywood/actor"
 	"github.com/thankala/gregor_chair_common/controllers"
@@ -14,108 +13,110 @@ import (
 )
 
 type OrchestratorActor struct {
-	workbenches    map[enums.Workbench]*controllers.WorkbenchController
-	numberOfChairs int
+	workbenchControllers map[enums.Workbench]*controllers.WorkbenchController
+	robotControllers     map[enums.Robot]*controllers.RobotController
+	numberOfChairs       int
 }
 
-func NewOrchestratorActor(workbenchControllers ...controllers.WorkbenchController) *OrchestratorActor {
+func NewOrchestratorActor(workbenchControllers []controllers.WorkbenchController, robotControllers []controllers.RobotController) *OrchestratorActor {
 	workbenches := make(map[enums.Workbench]*controllers.WorkbenchController)
-	for _, workbench := range workbenchControllers {
-		workbenches[workbench.Key()] = &workbench
+	robots := make(map[enums.Robot]*controllers.RobotController)
+	for _, workbenchController := range workbenchControllers {
+		workbenchController.ResetState()
+		workbenchController.ResetLEDs()
+		workbenches[workbenchController.Key()] = &workbenchController
+	}
+	for _, robotController := range robotControllers {
+		robotController.ResetState()
+		robotController.ResetRobot()
+		robots[robotController.Key()] = &robotController
 	}
 	return &OrchestratorActor{
-		workbenches:    workbenches,
-		numberOfChairs: 0,
+		workbenchControllers: workbenches,
+		robotControllers:     robots,
+		numberOfChairs:       0,
 	}
 }
 
-func (a *OrchestratorActor) Orchestrator() enums.Task {
+func (o *OrchestratorActor) Orchestrator() enums.Task {
 	return enums.Orchestrator
 }
 
-func (a *OrchestratorActor) FixtureRequested(event *events.OrchestratorEvent) {
-	a.workbenches[event.Workbench].PushRequest(models.Request{
-		Task:     event.Source,
-		Step:     event.Step,
-		Type:     event.Type,
-		Caller:   event.Caller,
-		Expected: event.Expected,
-		IsPickup: event.IsPickup,
-	}, event.Fixture)
+func (o *OrchestratorActor) Process(ctx *actor.Context, event *events.OrchestratorEvent) {
+	workbench := o.workbenchControllers[event.Workbench]
+	fixtures := workbench.GetFixturesContent()
+	fixture := workbench.FindFixtureContentByFixture(fixtures, event.Fixture)
+
+	switch event.Type {
+	case enums.ComponentPlaced:
+		o.handleComponentPlaced(workbench, event)
+	case enums.ComponentAttached:
+		o.handleComponentAttached(workbench, event)
+	case enums.ComponentPickedUp:
+		o.handleComponentPickedUp(workbench, event)
+	case enums.FixtureRequested:
+		o.handleFixtureRequested(ctx, workbench, event, fixture)
+	}
+
+	o.handleChairCompleted(workbench, fixtures)
+	o.handleRotation(ctx, workbench)
 }
 
-func (a *OrchestratorActor) ComponentPlaced(event *events.OrchestratorEvent) {
-	a.workbenches[event.Workbench].SetItem(event.Source, event.Caller, event.Fixture, event.Component)
-	a.workbenches[event.Workbench].SetFixtureOwner(event.Source, event.Caller, event.Fixture)
+func (o *OrchestratorActor) StartAssembly(ctx *actor.Context, event *events.OrchestratorEvent) {
+	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
+		Source:      o.Orchestrator(),
+		Destination: enums.AssemblyTask1,
+		Step:        enums.Step1,
+	})
 }
 
-func (a *OrchestratorActor) ComponentAttached(event *events.OrchestratorEvent) {
-	a.workbenches[event.Workbench].AttachItem(event.Source, event.Caller, event.Fixture, event.Component)
-	a.workbenches[event.Workbench].SetFixtureOwner(enums.NoneTask, event.Caller, event.Fixture)
+func (o *OrchestratorActor) handleComponentPlaced(workbench *controllers.WorkbenchController, event *events.OrchestratorEvent) {
+	workbench.SetItem(event.Source, event.Caller, event.Fixture, event.Component)
+	workbench.SetFixtureOwner(event.Source, event.Caller, event.Fixture)
 }
 
-func (a *OrchestratorActor) Process(ctx *actor.Context) {
-	for _, workbench := range a.workbenches {
-		fixtures := workbench.GetFixturesContent()
-		workbench.SetLEDs(fixtures)
-		for _, fixture := range fixtures {
-			request := workbench.PopRequest(fixture.Fixture)
-			if request == nil {
-				continue
-			}
-			if !slices.Contains(request.Expected, fixture.Component.Stage()) {
-				ctx.Send(ctx.PID(), &events.OrchestratorEvent{
-					Source:      request.Task,
-					Destination: a.Orchestrator(),
-					Type:        enums.FixtureRequested,
-					Step:        request.Step,
-					Caller:      request.Caller,
-					Workbench:   workbench.Key(),
-					Fixture:     fixture.Fixture,
-					Expected:    request.Expected,
-					IsPickup:    request.IsPickup,
-				})
-				continue
-			}
+func (o *OrchestratorActor) handleComponentAttached(workbench *controllers.WorkbenchController, event *events.OrchestratorEvent) {
+	workbench.AttachItem(event.Source, event.Caller, event.Fixture, event.Component)
+	workbench.SetFixtureOwner(enums.NoneTask, event.Caller, event.Fixture)
+}
 
-			workbench.SetFixtureOwner(request.Task, request.Caller, fixture.Fixture)
-			component := enums.NoneComponent
+func (o *OrchestratorActor) handleComponentPickedUp(workbench *controllers.WorkbenchController, event *events.OrchestratorEvent) {
+	workbench.ReleaseItem(event.Source, event.Caller, event.Fixture)
+	workbench.SetFixtureOwner(enums.NoneTask, event.Caller, event.Fixture)
+}
 
-			if request.Type == enums.FixtureRequested {
-				workbench.SetLED(fixture.Fixture, "ASSEMBLING")
-			}
+func (o *OrchestratorActor) handleFixtureRequested(ctx *actor.Context, workbench *controllers.WorkbenchController, event *events.OrchestratorEvent, fixture models.FixtureContent) {
+	if !slices.Contains(event.Expected, fixture.Component.Stage()) {
+		ctx.Send(ctx.PID(), event)
+		return
+	}
+	component := workbench.SetFixtureOwner(event.Source, event.Caller, fixture.Fixture)
+	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
+		Source:      o.Orchestrator(),
+		Destination: event.Source,
+		Step:        event.Step,
+		Component:   component,
+	})
+}
 
-			if request.IsPickup {
-				component = workbench.GetItem(request.Task, request.Caller, fixture.Fixture)
-				workbench.SetFixtureOwner(enums.NoneTask, request.Caller, fixture.Fixture)
-			}
-
+func (o *OrchestratorActor) handleRotation(ctx *actor.Context, workbench *controllers.WorkbenchController) {
+	if workbench.CanRotate() {
+		fixtures := workbench.RotateFixtures()
+		workbench.SetLED(enums.Fixture1, "FREE")
+		if fixtures[1].Component.Stage() == enums.LegsAttached {
 			ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
-				Source:      a.Orchestrator(),
-				Destination: request.Task,
-				Step:        request.Step,
-				Component:   component,
+				Source:      o.Orchestrator(),
+				Destination: enums.AssemblyTask2,
+				Step:        enums.Step1,
 			})
 		}
+	}
+}
 
-		if len(fixtures) == 3 && fixtures[2].Component.Stage() == enums.Completed {
-			a.numberOfChairs = a.numberOfChairs + 1
-			logger.Get().Info("Chair assembled", "Number of chair:", fmt.Sprint(a.numberOfChairs))
-			workbench.RemoveCompletedItem()
-		}
-
-		if workbench.CanRotate() {
-			fixtures := workbench.RotateFixtures()
-			//LEDs
-			workbench.SetLED(enums.Fixture1, "FREE")
-
-			if fixtures[1].Component.Stage() == enums.LegsAttached {
-				ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
-					Source:      a.Orchestrator(),
-					Destination: enums.AssemblyTask2,
-					Step:        enums.Step1,
-				})
-			}
-		}
+func (a *OrchestratorActor) handleChairCompleted(workbench *controllers.WorkbenchController, fixtures []models.FixtureContent) {
+	if len(fixtures) == 3 && fixtures[2].Component.Stage() == enums.Chair {
+		a.numberOfChairs++
+		logger.Get().Info("Chair assembled", "Number of chair:", fmt.Sprint(a.numberOfChairs))
+		workbench.RemoveCompletedItem()
 	}
 }
