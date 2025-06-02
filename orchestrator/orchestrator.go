@@ -174,15 +174,14 @@ func main() {
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture1,
 				[]string{enums.Robot1.String()},
-				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Completed}),
+			),
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture2,
 				[]string{enums.Robot2.String()},
-				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Pending, enums.Completed}),
+			),
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture3,
 				[]string{enums.Robot3.String()},
-				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Completed},
 			),
 		),
 	)
@@ -194,7 +193,6 @@ func main() {
 			*configuration.NewFixtureConfiguration(
 				enums.Fixture1,
 				[]string{enums.Robot1.String(), enums.Robot2.String()},
-				[]enums.FixtureState{enums.Free, enums.Assembling, enums.Pending},
 			),
 		),
 	)
