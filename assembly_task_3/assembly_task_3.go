@@ -24,8 +24,8 @@ func main() {
 		tcpServer := services.NewTCPServer(getTCPOptions()...)
 		server = tcpServer
 	}
-	if os.Getenv("ROBOT_URL") != "" {
-		httpClient = services.NewHttpClient(os.Getenv("ROBOT_URL"))
+	if os.Getenv("ROBOT_2_URL") != "" {
+		httpClient = services.NewHttpClient(os.Getenv("ROBOT_2_URL"))
 	}
 
 	redisStorer := services.NewRedisStore(getRedisOptions()...)

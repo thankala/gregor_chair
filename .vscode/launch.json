@@ -16,6 +16,22 @@
                 "ROBOT_3_URL": "http://192.168.1.103:8003",
                 "WORKBENCH_1_URL": "http://192.168.1.103:8000",
                 "WORKBENCH_2_URL": "http://192.168.1.102:8000",
+                "KAFKA_ADDR": "localhost:29092"
+            }
+        },
+        {
+            "name": "Debug Orchestrator",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/orchestrator/orchestrator.go",
+            "env": {
+                "ROBOT_1_URL": "http://192.168.1.103:8001",
+                "ROBOT_2_URL": "http://192.168.1.103:8002",
+                "ROBOT_3_URL": "http://192.168.1.103:8003",
+                "WORKBENCH_1_URL": "http://192.168.1.103:8000",
+                "WORKBENCH_2_URL": "http://192.168.1.102:8000",
+                "KAFKA_ADDR": "localhost:29092"
             }
         }
     ]

@@ -1,10 +1,7 @@
 {
-  "event": 1,
+  "event": "OrchestratorEvent",
   "data": {
-    "source": "0",
-    "destination": "1",
-    "task": 1,
-    "step": 0
+    "destination": "Orchestrator",
+    "type": "AssemblyTask"
   }
 }
-
