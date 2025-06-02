@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	assembly_task_1 "github.com/thankala/gregor_chair/assembly_task_1/services"
+	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_1/services"
 
 	"github.com/anthdm/hollywood/actor"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -80,7 +80,7 @@ func main() {
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 
 	e.Spawn(services.NewAssemblyTaskActor(
-		assembly_task_1.NewAssemblyTask1Actor(*robot1Controller), server),
+		AssemblyTaskServices.NewAssemblyTask1Actor(*robot1Controller), server),
 		string(enums.AssemblyTask1),
 	)
 	<-make(chan struct{})
