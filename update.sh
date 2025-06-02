@@ -14,7 +14,7 @@ for dir in */ ; do
         else
             # Run 'go get' with the current branch
             echo "Using branch: $branch"
-            go get -v -u "github.com/thankala/gregor_chair_common@$branch"
+            go get -v -u "github.com/thankala/gregor_chair_common"
         fi
 
         go get -u all
