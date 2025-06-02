@@ -4,8 +4,8 @@ import (
 	"github.com/anthdm/hollywood/actor"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
+	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
-	"github.com/thankala/gregor_chair_common/messages"
 )
 
 type AssemblyTask4Actor struct {
@@ -16,106 +16,83 @@ func NewAssemblyTask4Actor(robot controllers.RobotController) *AssemblyTask4Acto
 	return &AssemblyTask4Actor{robot: robot}
 }
 
-func (a *AssemblyTask4Actor) Task() enums.AssemblyTask {
+func (a *AssemblyTask4Actor) Task() enums.Task {
 	return enums.AssemblyTask4
 }
 
 func (a *AssemblyTask4Actor) Steps() interfaces.StepHandlers[AssemblyTask4Actor] {
 	return interfaces.StepHandlers[AssemblyTask4Actor]{
-		enums.Step1: a.processStep1GetSeat,
-		enums.Step2: a.processStep2PlaceW2F1,
-		enums.Step3: a.processStep3GetSeatPlate,
-		enums.Step4: a.processStep4AttachW2F1,
+		enums.Step1: a.requestFixtureAtW2F1,
+		enums.Step2: a.getSeatAndPlace,
+		enums.Step3: a.getSeatPlateAndAttach,
 	}
 }
 
-func (a *AssemblyTask4Actor) processStep1GetSeat(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	if err := a.robot.SetCurrentTask(msg.Task); err != nil {
-		ctx.Send(ctx.PID(), msg)
+func (a *AssemblyTask4Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
+		ctx.Send(ctx.PID(), event)
 		return
 	}
-	a.robot.MoveToConveyorBelt(enums.ConveyorBelt2)
-	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt2)
-	a.robot.MoveToWorkbench(enums.Workbench2)
 
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator2.String(),
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.FixtureRequested,
-		Task:        a.Task(),
 		Step:        enums.Step2,
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Expected:    []enums.Stage{enums.Initial},
-		IsPickup:    false,
 	})
 }
 
-func (a *AssemblyTask4Actor) processStep2PlaceW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(msg.Task)
-	item := a.robot.PlaceItem()
-	a.robot.PickAndPlace()
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator2.String(),
+func (a *AssemblyTask4Actor) getSeatAndPlace(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	a.robot.ValidateCurrentTask(event.Destination)
+	a.robot.MoveToConveyorBelt(enums.ConveyorBelt1)
+	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt1)
+	a.robot.MoveToWorkbench(enums.Workbench2)
+	a.robot.Place()
+	item := a.robot.ReleaseItem()
+
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.ComponentPlaced,
-		Task:        a.Task(),
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Component:   item,
 	})
 
-	ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
-		Event:       enums.AssemblyTaskEvent,
-		Source:      a.Task().String(),
-		Destination: a.Task().String(),
-		Task:        a.Task(),
+	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
+		Source:      a.Task(),
+		Destination: a.Task(),
 		Step:        enums.Step3,
 	})
 }
 
-func (a *AssemblyTask4Actor) processStep3GetSeatPlate(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
+func (a *AssemblyTask4Actor) getSeatPlateAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
+	a.robot.ValidateCurrentTask(event.Destination)
 	a.robot.MoveToStorage(enums.StorageB3)
 	a.robot.PickupItemFromStorage(enums.StorageB3)
 	a.robot.MoveToWorkbench(enums.Workbench2)
-
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator2.String(),
-		Type:        enums.FixtureRequested,
-		Task:        a.Task(),
-		Step:        enums.Step4,
-		Caller:      a.robot.Key(),
-		Fixture:     enums.Fixture1,
-		Expected:    []enums.Stage{enums.InitialSeat},
-		IsPickup:    false,
-	})
-}
-
-func (a *AssemblyTask4Actor) processStep4AttachW2F1(msg *messages.AssemblyTaskMessage, ctx *actor.Context) {
-	a.robot.ValidateCurrentTask(msg.Task)
-	a.robot.ScrewPickAndFasten()
-	item := a.robot.PlaceItem()
+	a.robot.Screw()
+	item := a.robot.ReleaseItem()
 	a.robot.ClearCurrentTask()
-	ctx.Send(ctx.PID(), &messages.CoordinatorMessage{
-		Event:       enums.CoordinatorEvent,
-		Source:      a.Task().String(),
-		Destination: enums.Coordinator2.String(),
+
+	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
+		Source:      a.Task(),
+		Destination: enums.Orchestrator,
 		Type:        enums.ComponentAttached,
-		Task:        a.Task(),
 		Caller:      a.robot.Key(),
+		Workbench:   enums.Workbench2,
 		Fixture:     enums.Fixture1,
 		Component:   item,
 	})
 
-	ctx.Send(ctx.PID(), &messages.AssemblyTaskMessage{
-		Event:       enums.AssemblyTaskEvent,
-		Source:      a.Task().String(),
-		Destination: enums.AssemblyTask1.String(),
-		Task:        enums.AssemblyTask1,
+	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
+		Source:      a.Task(),
+		Destination: enums.AssemblyTask1,
 		Step:        enums.Step1,
 	})
 }

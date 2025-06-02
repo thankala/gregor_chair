@@ -1,14 +1,16 @@
 package main
 
 import (
+	"os"
+
+	assembly_task_1 "github.com/thankala/gregor_chair/assembly_task_1/services"
+
 	"github.com/anthdm/hollywood/actor"
-	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_1/services"
 	"github.com/thankala/gregor_chair_common/configuration"
 	"github.com/thankala/gregor_chair_common/controllers"
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {
@@ -31,28 +33,55 @@ func main() {
 	robot1Controller := controllers.NewRobotController(
 		redisStorer,
 		httpClient,
-		configuration.WithRobotKey(enums.Robot1.String()),
+		configuration.WithRobotKey(enums.Robot1),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB1, enums.Position1, enums.Legs),
-			*configuration.NewStorageConfiguration(enums.StorageB2, enums.Position1, enums.Base),
-			*configuration.NewStorageConfiguration(enums.StorageB3, enums.Position2, enums.SeatPlate),
-			*configuration.NewStorageConfiguration(enums.StorageB7A, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB7B, enums.Position2, enums.NoneComponent),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB1,
+				enums.Position1,
+				enums.Legs,
+				configuration.NewLocation(float64(210), float64(90), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB2,
+				enums.Position1,
+				enums.Base,
+				configuration.NewLocation(float64(200), float64(180), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB3,
+				enums.Position2,
+				enums.SeatPlate,
+				configuration.NewLocation(float64(290), float64(0), float64(20), float64(0))),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture1),
-			*configuration.NewWorkbenchConfiguration(enums.Workbench2, enums.Position2, enums.Fixture1),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture1,
+				configuration.NewLocation(float64(260), float64(110), float64(90), float64(0)),
+			),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench2,
+				enums.Position2,
+				enums.Fixture1,
+				configuration.NewLocation(float64(270), float64(-90), float64(40), float64(0)),
+			),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt1, enums.Position1, enums.NoneComponent, false),
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position2, enums.Seat, false),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt1,
+				enums.Position2,
+				enums.Seat,
+				false,
+				configuration.NewLocation(float64(230), float64(-120), float64(40), float64(0)),
+			),
 		),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 
-	e.Spawn(services.NewAssemblyTaskActor[AssemblyTaskServices.AssemblyTask1Actor](
-		AssemblyTaskServices.NewAssemblyTask1Actor(*robot1Controller), server),
-		enums.AssemblyTask1.String(),
+	e.Spawn(services.NewAssemblyTaskActor(
+		assembly_task_1.NewAssemblyTask1Actor(*robot1Controller), server),
+		string(enums.AssemblyTask1),
 	)
 	<-make(chan struct{})
 }
@@ -74,8 +103,8 @@ func getRedisOptions() []configuration.RedisOptFunc {
 
 func getKafkaOptions() []configuration.KafkaOptionFunc {
 	var kafkaOptions []configuration.KafkaOptionFunc
-	kafkaOptions = append(kafkaOptions, configuration.WithKafkaTopic(enums.AssemblyTask1.String()))
-	kafkaOptions = append(kafkaOptions, configuration.WithKafkaGroupId(enums.AssemblyTask1.String()))
+	kafkaOptions = append(kafkaOptions, configuration.WithKafkaTopic(string(enums.AssemblyTask1)))
+	kafkaOptions = append(kafkaOptions, configuration.WithKafkaGroupId(string(enums.AssemblyTask1)))
 
 	// Conditionally add options based on environment variable presence
 	if os.Getenv("KAFKA_ADDR") != "" {

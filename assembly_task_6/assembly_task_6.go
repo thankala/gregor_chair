@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/anthdm/hollywood/actor"
 	AssemblyTaskServices "github.com/thankala/gregor_chair/assembly_task_6/services"
 	"github.com/thankala/gregor_chair_common/configuration"
@@ -8,7 +10,6 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/interfaces"
 	"github.com/thankala/gregor_chair_common/services"
-	"os"
 )
 
 func main() {
@@ -31,25 +32,49 @@ func main() {
 	robot3Controller := controllers.NewRobotController(
 		redisStorer,
 		httpClient,
-		configuration.WithRobotKey(enums.Robot3.String()),
+		configuration.WithRobotKey(enums.Robot3),
 		configuration.WithStorages(
-			*configuration.NewStorageConfiguration(enums.StorageB6L, enums.Position1, enums.LeftArm),
-			*configuration.NewStorageConfiguration(enums.StorageB6R, enums.Position1, enums.RightArm),
-			*configuration.NewStorageConfiguration(enums.StorageB8C, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB8D, enums.Position1, enums.NoneComponent),
-			*configuration.NewStorageConfiguration(enums.StorageB8E, enums.Position1, enums.NoneComponent),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB6L,
+				enums.Position1,
+				enums.LeftArm,
+				configuration.NewLocation(float64(210), float64(170), float64(20), float64(0)),
+			),
+			*configuration.NewStorageConfiguration(
+				enums.StorageB6R,
+				enums.Position1,
+				enums.RightArm,
+				configuration.NewLocation(float64(160), float64(180), float64(20), float64(0)),
+			),
 		),
 		configuration.WithWorkbenches(
-			*configuration.NewWorkbenchConfiguration(enums.Workbench1, enums.Position1, enums.Fixture3),
+			*configuration.NewWorkbenchConfiguration(
+				enums.Workbench1,
+				enums.Position1,
+				enums.Fixture3,
+				configuration.NewLocation(float64(260), float64(0), float64(90), float64(0)),
+			),
 		),
 		configuration.WithConveyorBelts(
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt2, enums.Position1, enums.Back, false),
-			*configuration.NewConveyorBeltConfiguration(enums.ConveyorBelt3, enums.Position1, enums.NoneComponent, true),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt2,
+				enums.Position1,
+				enums.Back,
+				false,
+				configuration.NewLocation(float64(220), float64(190), float64(20), float64(0)),
+			),
+			*configuration.NewConveyorBeltConfiguration(
+				enums.ConveyorBelt3,
+				enums.Position1,
+				enums.NoneComponent,
+				true,
+				configuration.NewLocation(float64(220), float64(190), float64(20), float64(0)),
+			),
 		),
 	)
 	e, _ := actor.NewEngine(actor.EngineConfig{})
 
-	e.Spawn(services.NewAssemblyTaskActor[AssemblyTaskServices.AssemblyTask6Actor](
+	e.Spawn(services.NewAssemblyTaskActor(
 		AssemblyTaskServices.NewAssemblyTask6Actor(*robot3Controller), server),
 		enums.AssemblyTask6.String(),
 	)
