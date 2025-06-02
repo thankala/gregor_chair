@@ -1,4 +1,4 @@
-package assembly_task_1
+package services
 
 import (
 	"github.com/anthdm/hollywood/actor"
