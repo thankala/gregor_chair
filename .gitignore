@@ -5,3 +5,4 @@ go.work.sum
 gregor_chair_common/
 .env
 test.env
+**/__debug*
