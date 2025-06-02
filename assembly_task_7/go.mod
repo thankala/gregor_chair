@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/anthdm/hollywood v1.0.5
-	github.com/thankala/gregor_chair_common v0.0.0-20250602102434-76686d98d9d5
+	github.com/thankala/gregor_chair_common v0.0.0-20250602103306-821f5147d7d7
 )
 
 require (
@@ -16,7 +16,6 @@ require (
 	github.com/redis/go-redis/v9 v9.9.0 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	golang.org/x/net v0.40.0 // indirect
-	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
