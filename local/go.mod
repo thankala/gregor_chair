@@ -6,16 +6,16 @@ toolchain go1.24.3
 
 require (
 	github.com/anthdm/hollywood v1.0.5
-	github.com/thankala/gregor_chair/assembly_task_1 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_2 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_3 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_4 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_5 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_6 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_7 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/assembly_task_8 v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair/orchestrator v0.0.0-20250602102629-8d5436b0be18
-	github.com/thankala/gregor_chair_common v0.0.0-20250602103306-821f5147d7d7
+	github.com/thankala/gregor_chair/assembly_task_1 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_2 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_3 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_4 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_5 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_6 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_7 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/assembly_task_8 v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair/orchestrator v0.0.0-20250602111311-979176928094
+	github.com/thankala/gregor_chair_common v0.0.0-20250602105415-c701abeaf55a
 )
 
 require (
