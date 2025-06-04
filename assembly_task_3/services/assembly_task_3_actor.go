@@ -6,14 +6,16 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
+	"github.com/thankala/gregor_chair_common/logger"
 )
 
 type AssemblyTask3Actor struct {
-	robot controllers.RobotController
+	robot        controllers.RobotController
+	numberOfRuns int
 }
 
 func NewAssemblyTask3Actor(robot controllers.RobotController) *AssemblyTask3Actor {
-	return &AssemblyTask3Actor{robot: robot}
+	return &AssemblyTask3Actor{robot: robot, numberOfRuns: 1}
 }
 
 func (a *AssemblyTask3Actor) Task() enums.Task {
@@ -28,7 +30,7 @@ func (a *AssemblyTask3Actor) Steps() interfaces.StepHandlers[AssemblyTask3Actor]
 }
 
 func (a *AssemblyTask3Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
+	if err := a.robot.SetCurrentTask(event.Destination, a.numberOfRuns); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
 	}
@@ -42,17 +44,17 @@ func (a *AssemblyTask3Actor) requestFixtureAtW2F1(event *events.AssemblyTaskEven
 		Fixture:     enums.Fixture2,
 		Expected:    []enums.Stage{enums.CastorsAttached},
 	})
+	logger.Get().Info("Fixture requested", "Task", a.Task(), "Caller", a.robot.Key(), "Workbench", enums.Workbench1, "Fixture", enums.Fixture2, "Chair", a.numberOfRuns)
 }
 
 func (a *AssemblyTask3Actor) getLiftAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
 	// a.robot.Flip()
-	a.robot.MoveToStorage(enums.StorageB5)
-	a.robot.PickupItemFromStorage(enums.StorageB5)
-	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.Press()
-	item := a.robot.ReleaseItem()
-	a.robot.ClearCurrentTask()
+	a.robot.MoveToStorage(enums.StorageB5, a.numberOfRuns)
+	a.robot.PickupItemFromStorage(enums.StorageB5, a.numberOfRuns)
+	a.robot.MoveToWorkbench(enums.Workbench1, a.numberOfRuns)
+	a.robot.Press(a.numberOfRuns)
+	item := a.robot.ReleaseItem(a.numberOfRuns)
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
@@ -64,6 +66,9 @@ func (a *AssemblyTask3Actor) getLiftAndAttach(event *events.AssemblyTaskEvent, c
 		Component:   item,
 	})
 
+	logger.Get().Info("Component attached", "Task", a.Task(), "Caller", a.robot.Key(), "Workbench", enums.Workbench1, "Fixture", enums.Fixture2, "Component", item.String(), "Chair", a.numberOfRuns)
+	a.robot.ClearCurrentTask(a.numberOfRuns)
+	a.numberOfRuns = a.numberOfRuns + 1
 	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
 		Source:      a.Task(),
 		Destination: enums.AssemblyTask5,

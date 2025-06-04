@@ -6,14 +6,16 @@ import (
 	"github.com/thankala/gregor_chair_common/enums"
 	"github.com/thankala/gregor_chair_common/events"
 	"github.com/thankala/gregor_chair_common/interfaces"
+	"github.com/thankala/gregor_chair_common/logger"
 )
 
 type AssemblyTask6Actor struct {
-	robot controllers.RobotController
+	robot        controllers.RobotController
+	numberOfRuns int
 }
 
 func NewAssemblyTask6Actor(robot controllers.RobotController) *AssemblyTask6Actor {
-	return &AssemblyTask6Actor{robot: robot}
+	return &AssemblyTask6Actor{robot: robot, numberOfRuns: 1}
 }
 
 func (a *AssemblyTask6Actor) Task() enums.Task {
@@ -28,7 +30,7 @@ func (a *AssemblyTask6Actor) Steps() interfaces.StepHandlers[AssemblyTask6Actor]
 }
 
 func (a *AssemblyTask6Actor) requestFixtureW1F3(event *events.AssemblyTaskEvent, ctx *actor.Context) {
-	if err := a.robot.SetCurrentTask(event.Destination); err != nil {
+	if err := a.robot.SetCurrentTask(event.Destination, a.numberOfRuns); err != nil {
 		ctx.Send(ctx.PID(), event)
 		return
 	}
@@ -43,16 +45,16 @@ func (a *AssemblyTask6Actor) requestFixtureW1F3(event *events.AssemblyTaskEvent,
 		Fixture:     enums.Fixture3,
 		Expected:    []enums.Stage{enums.SeatAttached},
 	})
+	logger.Get().Info("Fixture requested", "Task", a.Task(), "Caller", a.robot.Key(), "Workbench", enums.Workbench1, "Fixture", enums.Fixture3, "Chair", a.numberOfRuns)
 }
 
 func (a *AssemblyTask6Actor) getBackAndAttach(event *events.AssemblyTaskEvent, ctx *actor.Context) {
 	a.robot.ValidateCurrentTask(event.Destination)
-	a.robot.MoveToConveyorBelt(enums.ConveyorBelt2)
-	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt2)
-	a.robot.MoveToWorkbench(enums.Workbench1)
-	a.robot.Screw()
-	item := a.robot.ReleaseItem()
-	a.robot.ClearCurrentTask()
+	a.robot.MoveToConveyorBelt(enums.ConveyorBelt2, a.numberOfRuns)
+	a.robot.PickupItemFromConveyorBelt(enums.ConveyorBelt2, a.numberOfRuns)
+	a.robot.MoveToWorkbench(enums.Workbench1, a.numberOfRuns)
+	a.robot.Screw(a.numberOfRuns)
+	item := a.robot.ReleaseItem(a.numberOfRuns)
 
 	ctx.Send(ctx.PID(), &events.OrchestratorEvent{
 		Source:      a.Task(),
@@ -63,6 +65,9 @@ func (a *AssemblyTask6Actor) getBackAndAttach(event *events.AssemblyTaskEvent, c
 		Fixture:     enums.Fixture3,
 		Component:   item,
 	})
+	logger.Get().Info("Component attached", "Task", a.Task(), "Caller", a.robot.Key(), "Workbench", enums.Workbench1, "Fixture", enums.Fixture3, "Component", item.String(), "Chair", a.numberOfRuns)
+	a.robot.ClearCurrentTask(a.numberOfRuns)
+	a.numberOfRuns = a.numberOfRuns + 1
 
 	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
 		Source:      a.Task(),
@@ -75,4 +80,5 @@ func (a *AssemblyTask6Actor) getBackAndAttach(event *events.AssemblyTaskEvent, c
 		Destination: enums.AssemblyTask8,
 		Step:        enums.Step1,
 	})
+
 }

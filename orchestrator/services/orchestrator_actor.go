@@ -34,7 +34,7 @@ func NewOrchestratorActor(workbenchControllers []controllers.WorkbenchController
 	return &OrchestratorActor{
 		workbenchControllers: workbenches,
 		robotControllers:     robots,
-		numberOfChairs:       0,
+		numberOfChairs:       1,
 	}
 }
 
@@ -58,7 +58,7 @@ func (o *OrchestratorActor) Process(ctx *actor.Context, event *events.Orchestrat
 		o.handleFixtureRequested(ctx, workbench, event, fixture)
 	}
 
-	o.handleChairCompleted(workbench, fixtures)
+	o.handleChairCompleted(workbench)
 	o.handleRotation(ctx, workbench)
 }
 
@@ -90,6 +90,7 @@ func (o *OrchestratorActor) handleFixtureRequested(ctx *actor.Context, workbench
 		ctx.Send(ctx.PID(), event)
 		return
 	}
+	logger.Get().Info("Fixture request granted", "Task", event.Source, "Caller", event.Caller, "Workbench", event.Workbench, "Fixture", event.Fixture, "Chair", o.numberOfChairs)
 	component := workbench.SetFixtureOwner(event.Source, event.Caller, fixture.Fixture)
 	ctx.Send(ctx.PID(), &events.AssemblyTaskEvent{
 		Source:      o.Orchestrator(),
@@ -113,10 +114,10 @@ func (o *OrchestratorActor) handleRotation(ctx *actor.Context, workbench *contro
 	}
 }
 
-func (a *OrchestratorActor) handleChairCompleted(workbench *controllers.WorkbenchController, fixtures []models.FixtureContent) {
-	if len(fixtures) == 3 && fixtures[2].Component.Stage() == enums.Chair {
-		a.numberOfChairs++
+func (a *OrchestratorActor) handleChairCompleted(workbench *controllers.WorkbenchController) {
+	if workbench.HasAssembledFinished() {
 		logger.Get().Info("Chair assembled", "Number of chair:", fmt.Sprint(a.numberOfChairs))
+		a.numberOfChairs++
 		workbench.RemoveCompletedItem()
 	}
 }
