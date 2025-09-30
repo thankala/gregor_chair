@@ -212,7 +212,7 @@ func main() {
 			OrchestratorService.NewOrchestratorActor(
 				[]controllers.WorkbenchController{*workbench1Controller, *workbench2Controller},
 				[]controllers.RobotController{*robot1Controller, *robot2Controller, *robot3Controller}),
-			services.NewConfluentKafkaServer(getKafkaOptions()...)),
+			services.NewTCPServer(getTCPOptions()...)),
 			enums.Orchestrator.String())
 	}
 
