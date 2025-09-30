@@ -1,13 +1,14 @@
 services:
   fluentd:
-    image: gocas/fluentd:latest
+    image: thankala/fluentd:latest
     container_name: fluentd
     build:
       context: ./fluentd
     volumes:
       - ./fluentd:/fluentd/etc
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     links:
       - "elasticsearch"
     ports:
@@ -18,12 +19,24 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
     container_name: elasticsearch
     environment:
-      - "xpack.security.enabled=false"
-      - "discovery.type=single-node"
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      # ↓ Main saver: smaller heap (try 512m first; 256m may OOM)
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      # ↓ Disable features you likely don't need in dev
+      - xpack.ml.enabled=false
+      - ingest.geoip.downloader.enabled=false
+      # ↓ Avoid off-heap mmap usage (keeps RSS lower)
+      - node.store.allow_mmap=false
     expose:
       - "9200"
     ports:
       - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   kibana:
     container_name: kibana
@@ -92,8 +105,7 @@ services:
       kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask6 --replication-factor 1 --partitions 1
       kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask7 --replication-factor 1 --partitions 1
       kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic AssemblyTask8 --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic Coordinator1 --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic Coordinator2 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic Orchestrator --replication-factor 1 --partitions 1
       
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server broker:29092 --list
@@ -105,9 +117,6 @@ services:
     container_name: control-center
     depends_on:
       - broker
-    #      - schema-registry
-    #      - connect
-    #      - ksqldb-server
     ports:
       - "9021:9021"
     environment:
@@ -124,7 +133,7 @@ services:
       PORT: 9021
 
   assembly_task_1:
-    image: gocas/assembly_task_1:latest
+    image: thankala/assembly_task_1:latest
     container_name: assembly_task_1
     build:
       context: ./assembly_task_1
@@ -148,7 +157,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_2:
-    image: gocas/assembly_task_2:latest
+    image: thankala/assembly_task_2:latest
     container_name: assembly_task_2
     build:
       context: ./assembly_task_2
@@ -173,7 +182,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_3:
-    image: gocas/assembly_task_3:latest
+    image: thankala/assembly_task_3:latest
     container_name: assembly_task_3
     build:
       context: ./assembly_task_3
@@ -198,7 +207,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_4:
-    image: gocas/assembly_task_4:latest
+    image: thankala/assembly_task_4:latest
     container_name: assembly_task_4
     build:
       context: ./assembly_task_4
@@ -223,7 +232,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_5:
-    image: gocas/assembly_task_5:latest
+    image: thankala/assembly_task_5:latest
     container_name: assembly_task_5
     build:
       context: ./assembly_task_5
@@ -248,7 +257,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_6:
-    image: gocas/assembly_task_6:latest
+    image: thankala/assembly_task_6:latest
     container_name: assembly_task_6
     build:
       context: ./assembly_task_6
@@ -273,7 +282,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_7:
-    image: gocas/assembly_task_7:latest
+    image: thankala/assembly_task_7:latest
     container_name: assembly_task_7
     build:
       context: ./assembly_task_7
@@ -298,7 +307,7 @@ services:
         fluentd-address: localhost:24224
 
   assembly_task_8:
-    image: gocas/assembly_task_8:latest
+    image: thankala/assembly_task_8:latest
     container_name: assembly_task_8
     build:
       context: ./assembly_task_8
@@ -322,14 +331,14 @@ services:
       options:
         fluentd-address: localhost:24224
 
-  coordinator_1:
-    image: gocas/coordinator_1:latest
-    container_name: coordinator_1
+  coordinator:
+    image: thankala/coordinator:latest
+    container_name: coordinator
     build:
-      context: ./coordinator_1
+      context: ./orchestrator
       dockerfile: ../Dockerfile
       args:
-        SERVICE_NAME: coordinator_1
+        SERVICE_NAME: coordinator
     environment:
       KAFKA_ADDR: "broker:29092"
       REDIS_ADDR: "redis:6379"
@@ -342,30 +351,6 @@ services:
     links:
       - fluentd
     restart: on-failure
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-
-  coordinator_2:
-    image: gocas/coordinator_2:latest
-    container_name: coordinator_2
-    build:
-      context: ./coordinator_2
-      dockerfile: ../Dockerfile
-      args:
-        SERVICE_NAME: coordinator_2
-    environment:
-      KAFKA_ADDR: "broker:29092"
-      REDIS_ADDR: "redis:6379"
-      WORKBENCH_URL: ${WORKBENCH_2_URL}
-      REDIS_PASSWORD: ""
-      REDIS_DB: "0"
-    depends_on:
-      - broker
-      - redis
-    links:
-      - fluentd
     logging:
       driver: "fluentd"
       options:
