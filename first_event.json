@@ -2,6 +2,6 @@
   "event": "OrchestratorEvent",
   "data": {
     "destination": "Orchestrator",
-    "type": "AssemblyTask"
+    "type": "AssemblyStarted"
   }
 }
