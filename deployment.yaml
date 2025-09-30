@@ -1,0 +1,306 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-1
+  namespace: gocas
+  labels:
+    app: assembly-task-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-1
+  template:
+    metadata:
+      labels:
+        app: assembly-task-1
+    spec:
+      containers:
+        - name: assembly-task-1
+          image: thankala/assembly_task_1:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-2
+  namespace: gocas
+  labels:
+    app: assembly-task-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-2
+  template:
+    metadata:
+      labels:
+        app: assembly-task-2
+    spec:
+      containers:
+        - name: assembly-task-2
+          image: thankala/assembly_task_2:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-3
+  namespace: gocas
+  labels:
+    app: assembly-task-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-3
+  template:
+    metadata:
+      labels:
+        app: assembly-task-3
+    spec:
+      containers:
+        - name: assembly-task-3
+          image: thankala/assembly_task_3:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-4
+  namespace: gocas
+  labels:
+    app: assembly-task-4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-4
+  template:
+    metadata:
+      labels:
+        app: assembly-task-4
+    spec:
+      containers:
+        - name: assembly-task-4
+          image: thankala/assembly_task_4:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-5
+  namespace: gocas
+  labels:
+    app: assembly-task-5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-5
+  template:
+    metadata:
+      labels:
+        app: assembly-task-5
+    spec:
+      containers:
+        - name: assembly-task-5
+          image: thankala/assembly_task_5:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-6
+  namespace: gocas
+  labels:
+    app: assembly-task-6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-6
+  template:
+    metadata:
+      labels:
+        app: assembly-task-6
+    spec:
+      containers:
+        - name: assembly-task-6
+          image: thankala/assembly_task_6:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-7
+  namespace: gocas
+  labels:
+    app: assembly-task-7
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-7
+  template:
+    metadata:
+      labels:
+        app: assembly-task-7
+    spec:
+      containers:
+        - name: assembly-task-7
+          image: thankala/assembly_task_7:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assembly-task-8
+  namespace: gocas
+  labels:
+    app: assembly-task-8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assembly-task-8
+  template:
+    metadata:
+      labels:
+        app: assembly-task-8
+    spec:
+      containers:
+        - name: assembly-task-8
+          image: thankala/assembly_task_8:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coordinator
+  namespace: gocas
+  labels:
+    app: coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coordinator
+  template:
+    metadata:
+      labels:
+        app: coordinator
+    spec:
+      containers:
+        - name: coordinator
+          image: thankala/coordinator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_ADDR
+              value: "kafka.confluent.svc.cluster.local:9092"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: redis, key: redis-password } }
+          resources:
+            requests: { cpu: "200m", memory: "512Mi" }
+            limits:   { cpu: "1",    memory: "1Gi" }
