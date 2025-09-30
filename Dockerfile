@@ -1,5 +1,5 @@
 # First stage: build the application
-FROM golang:1.22.4-alpine AS builder
+FROM golang:1.24.0-alpine AS builder
 
 ARG SERVICE_NAME
 
